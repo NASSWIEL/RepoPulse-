@@ -1,0 +1,139 @@
+# ================================================
+# GitHub Activity Predictor v2.0 - Docker Compose
+# ================================================
+# Full MLOps stack with Dashboard, API, MLflow, and Orchestration
+
+services:
+  # ================================================
+  # MLflow Tracking Server
+  # ================================================
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.10.0
+    container_name: github-predictor-mlflow
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./mlruns:/mlflow/mlruns
+      - mlflow_artifacts:/mlflow/artifacts
+    environment:
+      - MLFLOW_TRACKING_URI=http://0.0.0.0:5000
+    command: >
+      mlflow server
+      --host 0.0.0.0
+      --port 5000
+      --backend-store-uri sqlite:///mlflow/mlruns/mlflow.db
+      --default-artifact-root /mlflow/artifacts
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    restart: unless-stopped
+    networks:
+      - predictor-network
+
+  # ================================================
+  # Streamlit Dashboard
+  # ================================================
+  dashboard:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: github-predictor-dashboard
+    ports:
+      - "8501:8501"
+    volumes:
+      - ./repositories:/app/repositories:ro
+      - ./data:/app/data:ro
+      - ./src:/app/src:ro
+      - ./model_registry:/app/model_registry
+      - ./ab_experiments:/app/ab_experiments
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - PYTHONPATH=/app
+      - STREAMLIT_SERVER_PORT=8501
+      - STREAMLIT_SERVER_ADDRESS=0.0.0.0
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8501/_stcore/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: unless-stopped
+    networks:
+      - predictor-network
+
+  # ================================================
+  # FastAPI Prediction Server
+  # ================================================
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: github-predictor-api
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./repositories:/app/repositories:ro
+      - ./model_registry:/app/model_registry
+      - ./src:/app/src:ro
+    environment:
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - PYTHONPATH=/app
+      - API_HOST=0.0.0.0
+      - API_PORT=8000
+    command: ["python", "-m", "uvicorn", "src.api_server:app", "--host", "0.0.0.0", "--port", "8000"]
+    depends_on:
+      mlflow:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    restart: unless-stopped
+    networks:
+      - predictor-network
+
+  # ================================================
+  # Prefect Orchestration Server (Optional)
+  # ================================================
+  # Uncomment to enable workflow orchestration
+  # orchestrator:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #   container_name: github-predictor-orchestrator
+  #   ports:
+  #     - "4200:4200"
+  #   volumes:
+  #     - ./repositories:/app/repositories
+  #     - ./model_registry:/app/model_registry
+  #     - ./src:/app/src:ro
+  #   environment:
+  #     - MLFLOW_TRACKING_URI=http://mlflow:5000
+  #     - PREFECT_API_URL=http://0.0.0.0:4200/api
+  #     - GITHUB_TOKEN=${GITHUB_TOKEN}
+  #   command: ["prefect", "server", "start", "--host", "0.0.0.0"]
+  #   restart: unless-stopped
+  #   networks:
+  #     - predictor-network
+
+# ================================================
+# Named Volumes
+# ================================================
+volumes:
+  mlflow_artifacts:
+    driver: local
+
+# ================================================
+# Networks
+# ================================================
+networks:
+  predictor-network:
+    driver: bridge

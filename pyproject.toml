@@ -1,0 +1,85 @@
+[project]
+name = "github-activity-predictor"
+version = "2.0.0"
+description = "MLOps pipeline for predicting GitHub repository activity using auto-regressive forecasting with advanced ML capabilities"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "MLOps Engineer" }
+]
+
+dependencies = [
+    # Core data processing
+    "pandas>=2.0.0",
+    "numpy>=1.24.0",
+    "pyarrow>=15.0.0",
+    
+    # Forecasting models
+    "prophet>=1.1.5",
+    "statsmodels>=0.14.0",
+    "scikit-learn>=1.4.0",
+    
+    # Experiment tracking
+    "mlflow>=2.10.0",
+    
+    # Dashboard
+    "streamlit>=1.30.0",
+    "plotly>=5.18.0",
+    
+    # API serving
+    "fastapi>=0.109.0",
+    "uvicorn[standard]>=0.27.0",
+    "pydantic>=2.5.0",
+    
+    # Workflow orchestration
+    "prefect>=2.14.0",
+    
+    # Data ingestion
+    "requests>=2.31.0",
+    
+    # Statistical analysis (for confidence intervals, A/B testing)
+    "scipy>=1.12.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.1.0",
+    "black>=24.0.0",
+    "ruff>=0.2.0",
+    "isort>=5.13.0",
+    "mypy>=1.8.0",
+]
+
+neural = [
+    # PyTorch for neural network model (optional)
+    "torch>=2.1.0",
+]
+
+distributed = [
+    # Dask for distributed computing (optional)
+    "dask[distributed]>=2024.1.0",
+]
+
+all = [
+    "github-activity-predictor[dev,neural,distributed]",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+
+[tool.black]
+line-length = 100
+target-version = ["py39"]

@@ -1,0 +1,74 @@
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+.venv
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.nox/
+
+# Documentation
+docs/_build/
+
+# Jupyter
+.ipynb_checkpoints
+
+# MLflow (local runs - will be mounted as volume)
+mlruns/
+
+# Large data files (will be mounted as volume)
+repositories/
+data/
+
+# Misc
+*.log
+*.tmp
+.DS_Store
+Thumbs.db
+
+# Docker
+.dockerignore
+docker-compose*.yml
+!compose.yaml
+
+# README and docs (not needed in container)
+README.md
+*.md
+!pyproject.toml
