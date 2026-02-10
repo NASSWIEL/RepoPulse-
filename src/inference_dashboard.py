@@ -622,7 +622,7 @@ def main():
         step_status = [0] * len(STEPS)
 
         def update_progress(step_idx: int, status: str):
-            """Update the status of a specific step and render all steps."""
+            """Update the status of a specific step and render only up to current step."""
             _, pct = STEPS[step_idx]
             progress_bar.progress(pct)
             
@@ -631,9 +631,9 @@ def main():
             elif status == "completed":
                 step_status[step_idx] = 2
             
-            # Build the display for all steps
+            # Build the display for steps up to and including the current step
             lines = []
-            for i in range(len(STEPS)):
+            for i in range(step_idx + 1):
                 step_name = STEPS[i][0]
                 if step_status[i] == 2:
                     lines.append(f"{i + 1}/{len(STEPS)} {step_name} — **Completed**")
