@@ -38,6 +38,38 @@ from src.model_engine import (
     ModelType
 )
 
+
+# Cached wrappers for slow I/O operations
+@st.cache_data(ttl=3600, show_spinner="Loading repositories...")
+def get_cached_repositories(data_dir: str):
+    """Cache the repository list to avoid slow NFS reads on every load."""
+    # Fast fallback list of popular repositories for quick startup
+    QUICK_REPOS = [
+        "3b1b__manim", "facebook__react", "microsoft__vscode", 
+        "tensorflow__tensorflow", "torvalds__linux", "vuejs__vue",
+        "django__django", "pallets__flask", "kubernetes__kubernetes",
+        "golang__go", "rust-lang__rust", "python__cpython"
+    ]
+    
+    try:
+        # Use fast os.listdir instead of Path.iterdir
+        import os
+        data_path = Path(data_dir)
+        if data_path.exists():
+            # Fast directory listing
+            all_dirs = os.listdir(data_dir)
+            repos = sorted([d for d in all_dirs if not d.startswith(".")])
+            return repos if repos else QUICK_REPOS
+        return QUICK_REPOS
+    except Exception:
+        return QUICK_REPOS
+
+
+@st.cache_data(ttl=600, show_spinner="Loading repository data...")
+def get_cached_repository_data(repo_path: str):
+    """Cache repository data loading."""
+    return load_repository_data(repo_path)
+
 # Import new modules (with fallbacks for missing dependencies)
 try:
     from src.neural_network import create_neural_network_wrapper, NeuralNetworkWrapper
@@ -268,9 +300,6 @@ def main():
             st.success("A/B Testing")
         else:
             st.warning("A/B: N/A")
-        "</p>",
-        unsafe_allow_html=True
-    )
     
     st.divider()
     
@@ -279,7 +308,7 @@ def main():
         st.header("Configuration")
         
         data_dir = get_data_directory()
-        repos = list_available_repositories(data_dir)
+        repos = get_cached_repositories(data_dir)
         
         if not repos:
             st.error(f"No repositories found in {data_dir}")
@@ -376,7 +405,7 @@ def main():
     # Load and display data summary
     with st.spinner("Loading repository data..."):
         try:
-            df = load_repository_data(repo_path)
+            df = get_cached_repository_data(repo_path)
             summary = get_repository_summary(repo_path)
         except Exception as e:
             st.error(f"Error loading data: {e}")
