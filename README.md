@@ -1,4 +1,4 @@
-# GitHub Activity Predictor v2.0
+# GitHub Activity Predictor
 
 MLOps pipeline for predicting GitHub repository activity (commits, stars, issues, PRs) using auto-regressive forecasting with **Prophet**, **FARIMA**, and **Neural Network** models.
 
@@ -21,153 +21,88 @@ MLOps pipeline for predicting GitHub repository activity (commits, stars, issues
 
 ---
 
-## Quick Start
+## Overview
 
-### 1. Install Dependencies
-```bash
-cd /info/raid-etu/m2/s2405959/BigData/last_update/bigmlops
-pip install -e .
+This project provides a complete pipeline for:
 
-# Optional: Install neural network support
-pip install -e ".[neural]"
+- Data ingestion from GitHub repositories  
+- Weekly aggregation and validation  
+- Time-series forecasting  
+- Model comparison and selection  
+- Experiment tracking  
+- REST API access  
+- Dashboard visualization  
+- Containerized deployment  
 
-# Optional: Install distributed computing support
-pip install -e ".[distributed]"
 
-# Install all optional dependencies
-pip install -e ".[all]"
-```
 
-### 2. Run Services
+## Features
 
-**Option A: Docker Compose (Recommended)**
-```bash
-docker compose up --build
-```
-
-**Option B: Local Development**
-
-```bash
-# Terminal 1 - MLflow UI
-mlflow ui --host 0.0.0.0 --port 5000
-
-# Terminal 2 - Streamlit Dashboard
-streamlit run src/dashboard.py --server.port 8501
-
-# Terminal 3 - FastAPI Server (optional)
-uvicorn src.api_server:app --host 0.0.0.0 --port 8000
-```
+- Automatic model selection with cross-validation  
+- 95% confidence intervals  
+- Data validation (schema checks, anomaly detection, drift monitoring)  
+- Model versioning and lifecycle management  
+- REST API with authentication and rate limiting  
+- Workflow orchestration  
+- A/B testing support  
+- Optional distributed processing  
+- CI/CD integration  
 
 ---
-
-## Access URLs
-
-| Service | URL | Description |
-|---------|-----|-------------|
-| **Dashboard** | http://localhost:8501 | Streamlit UI for predictions |
-| **MLflow** | http://localhost:5000 | Experiment tracking |
-| **API Server** | http://localhost:8000 | REST API for predictions |
-| **API Docs** | http://localhost:8000/docs | Swagger documentation |
-
----
-
-## Architecture
-
-```
-┌─────────────────────────────────────────────────────────────────────────────┐
-│                         Docker Compose Orchestration                         │
-├──────────────┬──────────────┬──────────────┬───────────────────────────────┤
-│   Dashboard  │   API Server │    MLflow    │      Prefect Orchestrator     │
-│  (Port 8501) │  (Port 8000) │ (Port 5000)  │        (Port 4200)            │
-├──────────────┴──────────────┴──────────────┴───────────────────────────────┤
-│                              Core Modules                                    │
-├─────────────────┬─────────────────┬─────────────────┬──────────────────────┤
-│   ETL Module    │  Model Engine   │  Neural Network │   Model Selection    │
-│   (etl.py)      │(model_engine.py)│(neural_network) │ (model_selection.py) │
-├─────────────────┴─────────────────┴─────────────────┴──────────────────────┤
-│                           Support Modules                                    │
-├────────────────┬────────────────┬─────────────────┬────────────────────────┤
-│ Data Ingestion │ Data Validation│  Model Registry │     A/B Testing       │
-│(data_ingestion)│(data_validation│ (model_registry)│   (ab_testing.py)     │
-└────────────────┴────────────────┴─────────────────┴────────────────────────┘
-```
 
 ## Project Structure
 
 ```
 bigmlops/
-├── .github/
-│   └── workflows/
-│       └── ci-cd.yaml         # GitHub Actions CI/CD pipeline
 ├── src/
-│   ├── __init__.py
-│   ├── etl.py                 # ETL: Extraction & Cleaning
-│   ├── model_engine.py        # Prophet & FARIMA models
-│   ├── neural_network.py      # Neural network for commits prediction
-│   ├── model_selection.py     # Auto model selection & hyperparameter tuning
-│   ├── data_validation.py     # Schema, anomaly, drift detection
-│   ├── model_registry.py      # Model versioning & lifecycle
-│   ├── data_ingestion.py      # GitHub API data fetching
-│   ├── api_server.py          # FastAPI prediction server
-│   ├── orchestration.py       # Prefect workflow orchestration
-│   ├── ab_testing.py          # A/B testing framework
-│   ├── distributed.py         # Dask distributed computing
-│   └── dashboard.py           # Streamlit UI
-├── repositories/              # Repository data (CSV files)
-├── mlruns/                    # MLflow tracking data
-├── model_registry/            # Registered model versions
-├── ab_experiments/            # A/B test data
+│   ├── etl.py
+│   ├── model_engine.py
+│   ├── neural_network.py
+│   ├── model_selection.py
+│   ├── data_validation.py
+│   ├── model_registry.py
+│   ├── data_ingestion.py
+│   ├── api_server.py
+│   ├── orchestration.py
+│   ├── ab_testing.py
+│   ├── distributed.py
+│   └── dashboard.py
+├── repositories/
+├── mlruns/
+├── model_registry/
+├── ab_experiments/
 ├── Dockerfile
 ├── compose.yaml
-├── pyproject.toml
-└── README.md
-```
-├── pyproject.toml           # uv/pip dependencies
-└── README.md
+└── pyproject.toml
 ```
 
-## Quick Start
+---
 
-### Prerequisites
+## Installation
 
-- Docker & Docker Compose
-- Python 3.9+ (for local development)
-- `uv` package manager (optional, for local dev)
-
-### Using Docker Compose (Recommended)
+### Using Docker (Recommended)
 
 ```bash
-# Clone and navigate to project
-cd github-activity-predictor
-
-# Start all services
-docker compose up -d
-
-# View logs
-docker compose logs -f
-
-# Access the applications:
-# - Streamlit Dashboard: http://localhost:8501
-# - MLflow UI: http://localhost:5000
+docker compose up --build -d
 ```
+
+Access:
+
+- Dashboard: http://localhost:8501  
+- MLflow: http://localhost:5000  
+- API: http://localhost:8000  
+
+---
 
 ### Local Development
 
 ```bash
-# Install uv if not already installed
-curl -LsSf https://astral.sh/uv/install.sh | sh
+pip install -e .
 
-# Create virtual environment and install dependencies
-uv venv
-source .venv/bin/activate  # Linux/macOS
-# or: .venv\Scripts\activate  # Windows
+# Start MLflow
+mlflow ui --port 5000
 
-uv pip install -e .
-
-# Start MLflow server (in a separate terminal)
-mlflow server --host 0.0.0.0 --port 5000
-
-# Run Streamlit dashboard
+# Run dashboard
 streamlit run src/dashboard.py
 ```
 
@@ -277,23 +212,7 @@ curl -X POST http://localhost:8000/predict/batch \
 
 ---
 
-## CI/CD Pipeline
 
-The project includes GitHub Actions workflows for:
-
-1. **Linting**: ruff, black, isort, mypy
-2. **Testing**: pytest with coverage
-3. **Data Validation**: Quality checks on repository data
-4. **Model Training**: Scheduled weekly training
-5. **Docker Build**: Container image creation
-6. **Deployment**: Staging and production deployments
-
-### Secrets Required
-
-| Secret | Description |
-|--------|-------------|
-| `GH_API_TOKEN` | GitHub API token for data ingestion |
-| `MLFLOW_TRACKING_URI` | MLflow server URL |
 
 ---
 
@@ -319,103 +238,47 @@ This approach is realistic because:
 - Model adapts based on its own predictions
 - Reflects uncertainty in longer forecasts
 
-## Configuration
+The system uses recursive multi-step forecasting:
 
-### Environment Variables
+1. Train on historical data  
+2. Predict the next step  
+3. Append prediction to history  
+4. Repeat for the full horizon  
 
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `MLFLOW_TRACKING_URI` | `http://mlflow:5000` | MLflow server URL |
-| `GITHUB_TOKEN` | - | GitHub API token for data ingestion |
-| `API_HOST` | `0.0.0.0` | API server host |
-| `API_PORT` | `8000` | API server port |
-| `STREAMLIT_SERVER_PORT` | `8501` | Streamlit port |
+This setup reflects real deployment conditions where future ground truth is not available.
 
-### Model Parameters
+---
 
-#### Prophet
-- `yearly_seasonality`: True
-- `weekly_seasonality`: True  
-- `seasonality_mode`: multiplicative
+## Data Requirements
 
-#### FARIMA
-- `order`: (1, 1, 1)
-- `seasonal_order`: (1, 1, 1, 52)
+Each repository directory should contain:
 
-#### Neural Network
-- `hidden_layers`: [64, 32, 16]
-- `activation`: ReLU
-- `epochs`: 200
-- `learning_rate`: 0.001
+- `commits.csv`
+- `issues.csv`
+- `pull_requests.csv`
+- `stargazers.csv`
 
-## Data Format
+### Weekly Output Format
 
-### Input CSV Files
+| Column          | Description             |
+|-----------------|-------------------------|
+| `ds`            | Week date               |
+| `commits`       | Number of commits       |
+| `new_stars`     | New stars received      |
+| `issues_opened` | Issues opened           |
+| `prs_opened`    | Pull requests opened    |
 
-Each repository folder should contain:
+---
 
-| File | Required Column | Description |
-|------|-----------------|-------------|
-| `commits.csv` | `author_date` | Commit timestamps |
-| `issues.csv` | `created_at` | Issue creation dates |
-| `pull_requests.csv` | `created_at` | PR creation dates |
-| `stargazers.csv` | `starred_at` | Star timestamps |
-
-### Output DataFrame
-
-| Column | Type | Description |
-|--------|------|-------------|
-| `ds` | datetime | Week end date (Sunday) |
-| `commits` | int | Number of commits that week |
-| `new_stars` | int | New stars received |
-| `issues_opened` | int | Issues opened |
-| `prs_opened` | int | Pull requests opened |
-
-## Docker Commands
+## Testing
 
 ```bash
-# Build and start all services
-docker compose up --build -d
-
-# Start specific services
-docker compose up dashboard mlflow -d
-
-# View logs
-docker compose logs -f dashboard
-docker compose logs -f api
-
-# Stop services
-docker compose down
-
-# Clean up everything
-docker compose down -v --rmi all
-```
-
-## Running Tests
-
-```bash
-# Install dev dependencies
-pip install -e ".[dev]"
-
-# Run tests
 pytest tests/ -v
-
-# Run with coverage
-pytest tests/ --cov=src --cov-report=html
+pytest tests/ --cov=src
 ```
+
+---
 
 ## License
 
 MIT License
-
-## Contributing
-
-1. Fork the repository
-2. Create a feature branch (`git checkout -b feature/amazing-feature`)
-3. Make your changes
-4. Run tests (`pytest tests/`)
-5. Submit a pull request
-
----
-
-Built with Python, Streamlit, Prophet, FARIMA, PyTorch, FastAPI, Prefect, MLflow & Docker
