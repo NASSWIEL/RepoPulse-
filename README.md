@@ -1,21 +1,23 @@
 # GitHub Activity Predictor v2.0
 
-**Enterprise-Grade MLOps Pipeline for GitHub Repository Activity Forecasting**
+MLOps pipeline for predicting GitHub repository activity (commits, stars, issues, PRs) using auto-regressive forecasting with **Prophet**, **FARIMA**, and **Neural Network** models.
 
-A complete MLOps solution that predicts GitHub repository activity (commits, stars, issues, PRs) using auto-regressive forecasting with **Prophet**, **FARIMA**, and **Neural Network** models.
+## Demo
+
+![Demo Interface](images/shot_demo.png)
 
 ## New in v2.0
 
-- **Neural Network Model** - Exploits correlation between PRs and commits
-- **Auto Model Selection** - Automatic hyperparameter optimization
-- **Confidence Intervals** - Quantify prediction uncertainty (95% CI)
-- **Data Validation** - Schema validation, anomaly detection, drift monitoring
-- **Model Registry** - Version control and lifecycle management
-- **REST API** - FastAPI server with authentication and rate limiting
-- **Workflow Orchestration** - Prefect-based pipeline scheduling
-- **A/B Testing Framework** - Compare model versions in production
-- **Distributed Computing** - Dask support for scalable processing
-- **CI/CD Pipeline** - GitHub Actions for automated testing and deployment
+- Neural Network Model - Uses correlation between PRs and commits
+- Auto Model Selection - Automatic hyperparameter optimization
+- Confidence Intervals - Quantify prediction uncertainty (95% CI)
+- Data Validation - Schema validation, anomaly detection, drift monitoring
+- Model Registry - Version control and lifecycle management
+- REST API - FastAPI server with authentication and rate limiting
+- Workflow Orchestration - Prefect-based pipeline scheduling
+- A/B Testing Framework - Compare model versions in production
+- Distributed Computing - Dask support for scalable processing
+- CI/CD Pipeline - GitHub Actions for automated testing and deployment
 
 ---
 
@@ -181,53 +183,53 @@ streamlit run src/dashboard.py
 
 ### Model Selection (`src/model_selection.py`)
 
-- **Automatic Hyperparameter Tuning**: Grid search with cross-validation
-- **Data Characteristic Analysis**: Recommends models based on data properties
-- **Multi-metric Evaluation**: RMSE, MAE, SMAPE comparison
-- **Best Model Selection**: Automatic selection of optimal model
+- Automatic Hyperparameter Tuning: Grid search with cross-validation
+- Data Characteristic Analysis: Recommends models based on data properties
+- Multi-metric Evaluation: RMSE, MAE, SMAPE comparison
+- Best Model Selection: Automatic selection of optimal model
 
 ### Data Validation (`src/data_validation.py`)
 
-- **Schema Validation**: Column types, required fields, value ranges
-- **Anomaly Detection**: IQR and Z-score methods
-- **Data Drift Monitoring**: KS-test and PSI metrics
-- **Quality Reports**: Comprehensive validation summaries
+- Schema Validation: Column types, required fields, value ranges
+- Anomaly Detection: IQR and Z-score methods
+- Data Drift Monitoring: KS-test and PSI metrics
+- Quality Reports: Comprehensive validation summaries
 
 ### Model Registry (`src/model_registry.py`)
 
-- **Semantic Versioning**: Major.minor.patch version control
-- **Lifecycle Stages**: Staging → Production → Archived
-- **MLflow Integration**: Optional cloud-based registry
-- **Model Metadata**: Parameters, metrics, tags
+- Semantic Versioning: Major.minor.patch version control
+- Lifecycle Stages: Staging → Production → Archived
+- MLflow Integration: Optional cloud-based registry
+- Model Metadata: Parameters, metrics, tags
 
 ### API Server (`src/api_server.py`)
 
-- **REST API**: FastAPI with automatic OpenAPI docs
-- **Authentication**: API key-based auth
-- **Rate Limiting**: Configurable request limits
-- **Batch Predictions**: Multiple repository predictions
-- **Health Checks**: Service status endpoints
+- REST API: FastAPI with automatic OpenAPI docs
+- Authentication: API key-based auth
+- Rate Limiting: Configurable request limits
+- Batch Predictions: Multiple repository predictions
+- Health Checks: Service status endpoints
 
 ### Orchestration (`src/orchestration.py`)
 
-- **Prefect Workflows**: Scheduled data ingestion and training
-- **Task Retries**: Automatic retry on failures
-- **Notifications**: Email/Slack on completion
-- **Pipeline Monitoring**: Execution tracking
+- Prefect Workflows: Scheduled data ingestion and training
+- Task Retries: Automatic retry on failures
+- Notifications: Email/Slack on completion
+- Pipeline Monitoring: Execution tracking
 
 ### A/B Testing (`src/ab_testing.py`)
 
-- **Traffic Splitting**: Random, sticky, or percentage-based
-- **Statistical Analysis**: T-test significance testing
-- **Auto-rollback**: Performance-based rollback
-- **Experiment Tracking**: Persistent result storage
+- Traffic Splitting: Random, sticky, or percentage-based
+- Statistical Analysis: T-test significance testing
+- Auto-rollback: Performance-based rollback
+- Experiment Tracking: Persistent result storage
 
 ### Distributed Computing (`src/distributed.py`)
 
-- **Dask Integration**: Parallel data processing
-- **Distributed Training**: Multi-worker model training
-- **Memory Efficiency**: Handle large datasets
-- **Cluster Management**: Easy worker scaling
+- Dask Integration: Parallel data processing
+- Distributed Training: Multi-worker model training
+- Memory Efficiency: Handle large datasets
+- Cluster Management: Easy worker scaling
 
 ---
 
@@ -297,7 +299,7 @@ The project includes GitHub Actions workflows for:
 
 ## Recursive Forecasting Algorithm
 
-The core algorithm implements "blind forecasting" - simulating what would happen if no new data were available:
+The algorithm implements "blind forecasting" - simulating what happens when no new data is available:
 
 ```
 1. Split: Train (historical) / Test (horizon h weeks)
@@ -312,10 +314,10 @@ The core algorithm implements "blind forecasting" - simulating what would happen
 4. Log everything to MLflow
 ```
 
-This approach is more realistic because:
-- Error compounds over time (as in real scenarios)
+This approach is realistic because:
+- Error compounds over time
 - Model adapts based on its own predictions
-- Reflects true uncertainty in longer forecasts
+- Reflects uncertainty in longer forecasts
 
 ## Configuration
 
