@@ -5,6 +5,7 @@ from __future__ import annotations
 import logging
 import os
 import re
+import time
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -20,6 +21,7 @@ def _ssl_verify() -> bool:
     if not enabled:
         urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
     return enabled
+
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +81,7 @@ def fetch_commits(
     cache_dir: Path = DEFAULT_CACHE_DIR,
     per_page: int = 100,
     max_pages: int = 500,
+    wait_on_rate_limit: bool = False,
 ) -> pd.DataFrame:
     spec = RepoSpec(owner, repo)
     cache_dir = Path(cache_dir)
@@ -105,7 +108,19 @@ def fetch_commits(
             raise RepoNotFoundError(f"{owner}/{repo} not found or private")
         if resp.status_code == 403 and "rate limit" in resp.text.lower():
             reset = int(resp.headers.get("X-RateLimit-Reset", "0"))
-            raise RateLimitError(datetime.fromtimestamp(reset, tz=timezone.utc))
+            reset_at = datetime.fromtimestamp(reset, tz=timezone.utc)
+            if wait_on_rate_limit:
+                wait = max(0, reset - int(time.time())) + 5
+                logger.warning(
+                    "Rate limit hit on %s/%s. Sleeping %ds until %s",
+                    owner,
+                    repo,
+                    wait,
+                    reset_at.isoformat(),
+                )
+                time.sleep(wait)
+                continue
+            raise RateLimitError(reset_at)
         resp.raise_for_status()
 
         for item in resp.json():

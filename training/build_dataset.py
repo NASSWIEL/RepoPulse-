@@ -45,25 +45,47 @@ def main(
 
     repos = yaml.safe_load(repos_yaml.read_text())[split]
     series_map: dict[str, pd.Series] = {}
+    total = len(repos)
 
-    for entry in repos:
+    for idx, entry in enumerate(repos, start=1):
         spec = parse_repo_url(entry)
+        print(f"[{idx}/{total}] fetching {entry}...", flush=True)
         try:
-            commits = fetch_commits(spec.owner, spec.repo, token=token)
+            commits = fetch_commits(
+                spec.owner,
+                spec.repo,
+                token=token,
+                wait_on_rate_limit=True,
+            )
         except RepoNotFoundError:
-            logger.warning("Skipping %s: not found", entry)
+            print(f"[{idx}/{total}] SKIP {entry}: not found", flush=True)
+            continue
+        except Exception as e:
+            print(f"[{idx}/{total}] ERROR {entry}: {type(e).__name__}: {e}", flush=True)
             continue
         s = to_monthly(commits)
         if len(s) < 24:
-            logger.warning("Skipping %s: only %d months of history", entry, len(s))
+            print(f"[{idx}/{total}] SKIP {entry}: only {len(s)} months", flush=True)
             continue
         series_map[entry] = s
-        logger.info("Added %s: %d months", entry, len(s))
+        print(f"[{idx}/{total}] OK {entry}: {len(s)} months, {len(commits)} commits", flush=True)
+
+        if idx % 25 == 0:
+            partial = build_dataset_from_series(series_map)
+            output.parent.mkdir(parents=True, exist_ok=True)
+            partial.to_parquet(output, index=False)
+            print(
+                f"  [checkpoint] {len(partial)} rows, {len(series_map)} repos -> {output}",
+                flush=True,
+            )
 
     df = build_dataset_from_series(series_map)
     output.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(output, index=False)
-    logger.info("Wrote %d rows to %s (%d repos)", len(df), output, len(series_map))
+    print(
+        f"DONE: {len(df)} rows, {len(series_map)}/{total} repos kept -> {output}",
+        flush=True,
+    )
 
 
 if __name__ == "__main__":
