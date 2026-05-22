@@ -1,0 +1,217 @@
+# Curated GitHub repos for training/validation of repo-pulse.
+# Criteria: age >= 3 years (created on or before 2023-01-01),
+# diverse domains & sizes, no hard forks.
+
+train:
+  # ML / DL frameworks & libs
+  - pytorch/pytorch
+  - tensorflow/tensorflow
+  - huggingface/transformers
+  - scikit-learn/scikit-learn
+  - keras-team/keras
+  - dmlc/xgboost
+  - microsoft/LightGBM
+  - apache/mxnet
+  - JuliaLang/julia
+  - explosion/spaCy
+  - ultralytics/yolov5
+  - fastai/fastai
+
+  # Web frameworks & libs
+  - facebook/react
+  - vuejs/vue
+  - angular/angular
+  - sveltejs/svelte
+  - expressjs/express
+  - django/django
+  - pallets/flask
+  - rails/rails
+  - laravel/laravel
+  - spring-projects/spring-boot
+  - nestjs/nest
+  - emberjs/ember.js
+  - preactjs/preact
+  - fastify/fastify
+
+  # Infra / DevOps / containerization
+  - kubernetes/kubernetes
+  - moby/moby
+  - hashicorp/terraform
+  - ansible/ansible
+  - helm/helm
+  - prometheus/prometheus
+  - grafana/grafana
+  - containerd/containerd
+  - istio/istio
+  - argoproj/argo-cd
+
+  # Programming language compilers & runtimes
+  - rust-lang/rust
+  - golang/go
+  - python/cpython
+  - openjdk/jdk
+  - dotnet/runtime
+  - nodejs/node
+  - ruby/ruby
+  - php/php-src
+
+  # Scientific computing / numerical
+  - numpy/numpy
+  - scipy/scipy
+  - pandas-dev/pandas
+  - matplotlib/matplotlib
+  - sympy/sympy
+  - statsmodels/statsmodels
+  - mlpack/mlpack
+  - Theano/Theano
+
+  # Databases / data stores
+  - postgres/postgres
+  - mysql/mysql-server
+  - redis/redis
+  - mongodb/mongo
+  - elastic/elasticsearch
+  - apache/cassandra
+  - cockroachdb/cockroach
+
+  # CLI tools & dev tools
+  - cli/cli
+  - sharkdp/bat
+  - BurntSushi/ripgrep
+  - junegunn/fzf
+  - tmux/tmux
+  - jqlang/jq
+  - tldr-pages/tldr
+  - charmbracelet/bubbletea
+  - asdf-vm/asdf
+  - yt-dlp/yt-dlp
+
+  # Editors / IDEs / shells
+  - neovim/neovim
+  - vim/vim
+  - microsoft/vscode
+  - emacs-mirror/emacs
+  - fish-shell/fish-shell
+  - zsh-users/zsh
+
+  # Mobile / cross-platform
+  - flutter/flutter
+  - facebook/react-native
+  - ionic-team/ionic-framework
+  - NativeScript/NativeScript
+  - expo/expo
+  - apache/cordova-android
+
+  # Security / cryptography
+  - openssl/openssl
+  - certbot/certbot
+  - OWASP/CheatSheetSeries
+  - hashicorp/vault
+  - wolfSSL/wolfssl
+
+  # Build tools / package managers
+  - webpack/webpack
+  - rollup/rollup
+  - gradle/gradle
+  - bazelbuild/bazel
+  - pypa/pip
+
+  # Game engines / graphics
+  - godotengine/godot
+  - mrdoob/three.js
+  - libgdx/libgdx
+  - pixijs/pixijs
+
+  # Static site generators / docs tools
+  - gohugoio/hugo
+  - jekyll/jekyll
+  - getpelican/pelican
+  - sphinx-doc/sphinx
+
+  # Networking / observability
+  - envoyproxy/envoy
+  - open-telemetry/opentelemetry-collector
+  - nginx/nginx
+  - traefik/traefik
+  - wireshark/wireshark
+  - haproxy/haproxy
+
+  # Operating systems / kernels
+  - torvalds/linux
+  - freebsd/freebsd-src
+  - illumos/illumos-gate
+  - NetBSD/src
+
+  # Robotics / IoT
+  - ros/ros
+  - ros2/ros2
+  - PX4/PX4-Autopilot
+
+  # Cloud-native SDKs
+  - aws/aws-sdk-go
+  - googleapis/google-cloud-python
+  - Azure/azure-sdk-for-python
+
+  # Misc useful libs
+  - lodash/lodash
+  - axios/axios
+  - protocolbuffers/protobuf
+  - curl/curl
+  - ffmpeg/FFmpeg
+
+validation:
+  # ML / data
+  - apache/spark
+  - apache/arrow
+  - onnx/onnx
+  - openai/gym
+
+  # Web
+  - vercel/next.js
+  - nuxt/nuxt
+  - remix-run/remix
+  - tailwindlabs/tailwindcss
+
+  # Infra / cloud
+  - etcd-io/etcd
+  - hashicorp/consul
+  - influxdata/influxdb
+
+  # Languages / runtimes
+  - JetBrains/kotlin
+  - apple/swift
+  - scala/scala
+  - elixir-lang/elixir
+
+  # Databases
+  - sqlite/sqlite
+  - prometheus/alertmanager
+
+  # CLI / dev tools
+  - git/git
+  - microsoft/terminal
+  - sharkdp/fd
+
+  # Editors / mobile
+  - bitwarden/clients
+  - ionic-team/capacitor
+
+  # Security
+  - jwtk/jjwt
+  - sigstore/cosign
+
+  # Build / package
+  - npm/cli
+  - yarnpkg/berry
+
+  # Graphics / games
+  - bevyengine/bevy
+
+  # Docs / static
+  - facebook/docusaurus
+
+  # Networking
+  - cilium/cilium
+
+  # OS
+  - SerenityOS/serenity
