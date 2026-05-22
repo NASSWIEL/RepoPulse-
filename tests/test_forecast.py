@@ -41,3 +41,19 @@ def test_naive_seasonal_falls_back_when_too_short():
     s = _series([5, 6, 7])
     res = NaiveSeasonal(period=12).forecast(s, horizon=6)
     assert (res.mean == 7).all()
+
+
+@pytest.mark.slow
+def test_chronos_zero_shot_returns_sane_forecast():
+    from src.forecast import ChronosZeroShot
+
+    s = _series([10, 12, 8, 15, 20, 14, 9, 11, 13, 16, 18, 12,
+                 11, 13, 9, 16, 21, 15, 10, 12, 14, 17, 19, 13])
+    forecaster = ChronosZeroShot(model_id="amazon/chronos-t5-tiny")
+    res = forecaster.forecast(s, horizon=6)
+
+    assert len(res.mean) == 6
+    assert (res.mean >= 0).all()
+    assert (res.upper >= res.mean).all()
+    assert (res.lower <= res.mean).all()
+    assert res.model_name == "chronos_zero_shot"
