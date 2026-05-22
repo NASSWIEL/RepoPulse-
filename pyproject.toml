@@ -1,69 +1,41 @@
 [project]
-name = "github-activity-predictor"
-version = "2.0.0"
-description = "MLOps pipeline for predicting GitHub repository activity using auto-regressive forecasting with advanced ML capabilities"
+name = "repo-pulse"
+version = "3.0.0"
+description = "Forecast monthly GitHub commit activity with a LoRA fine-tuned Chronos transformer"
 readme = "README.md"
-requires-python = ">=3.9"
+requires-python = ">=3.10"
 license = { text = "MIT" }
-authors = [
-    { name = "MLOps Engineer" }
-]
+authors = [{ name = "Naif Asswiel" }]
 
 dependencies = [
-    # Core data processing
+    "gradio>=4.0,<5.0",
+    "chronos-forecasting>=1.4.0",
+    "transformers>=4.40.0",
+    "peft>=0.10.0",
+    "torch>=2.1.0",
     "pandas>=2.0.0",
     "numpy>=1.24.0",
     "pyarrow>=15.0.0",
-    
-    # Forecasting models
-    "prophet>=1.1.5",
-    "statsmodels>=0.14.0",
-    "scikit-learn>=1.4.0",
-    
-    # Experiment tracking
-    "mlflow>=2.10.0",
-    
-    # Dashboard
-    "streamlit>=1.30.0",
     "plotly>=5.18.0",
-    
-    # API serving
-    "fastapi>=0.109.0",
-    "uvicorn[standard]>=0.27.0",
-    "pydantic>=2.5.0",
-    
-    # Workflow orchestration
-    "prefect>=2.14.0",
-    
-    # Data ingestion
     "requests>=2.31.0",
-    
-    # Statistical analysis (for confidence intervals, A/B testing)
-    "scipy>=1.12.0",
+    "pyyaml>=6.0",
+    "python-dotenv>=1.0.0",
+    "huggingface-hub>=0.23.0",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.0.0",
+    "pytest-mock>=3.10.0",
     "pytest-cov>=4.1.0",
+    "responses>=0.25.0",
+    "ruff>=0.4.0",
     "black>=24.0.0",
-    "ruff>=0.2.0",
-    "isort>=5.13.0",
-    "mypy>=1.8.0",
 ]
-
-neural = [
-    # PyTorch for neural network model (optional)
-    "torch>=2.1.0",
-]
-
-distributed = [
-    # Dask for distributed computing (optional)
-    "dask[distributed]>=2024.1.0",
-]
-
-all = [
-    "github-activity-predictor[dev,neural,distributed]",
+training = [
+    "accelerate>=0.30.0",
+    "datasets>=2.18.0",
+    "tqdm>=4.65.0",
 ]
 
 [build-system]
@@ -75,11 +47,16 @@ packages = ["src"]
 
 [tool.ruff]
 line-length = 100
-target-version = "py39"
+target-version = "py310"
 
 [tool.ruff.lint]
-select = ["E", "F", "W", "I"]
+select = ["E", "F", "W", "I", "B", "UP"]
 
 [tool.black]
 line-length = 100
-target-version = ["py39"]
+target-version = ["py310"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --strict-markers"
+markers = ["slow: requires model download or GPU"]
