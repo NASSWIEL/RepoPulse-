@@ -188,7 +188,7 @@ repo-pulse/
 - **Critères de curation** : diversité de domaines (ML, web, infra, langages, libs scientifiques), diversité de tailles (1k–100k+ stars), âge ≥ 3 ans pour garantir ≥36 points mensuels par série, exclusion des hard forks.
 - **Schéma** : parquet `{repo: str, month: date, commits: int, months_since_start: int}`. Une ligne par mois par repo.
 - **Taille attendue** : ~150 × ~80 = ~12k lignes.
-- **Publication** : push sur HF Datasets `{HF_USERNAME}/github-monthly-commits`, public. (`{HF_USERNAME}` à confirmer — placeholder remplacé à la première étape du plan.)
+- **Publication** : push sur HF Datasets `NaifSaleem/github-monthly-commits`, public.
 
 ### Fine-tuning
 
@@ -203,7 +203,7 @@ repo-pulse/
 - **Schedule** : 3 epochs, batch size effectif 32, warmup 10%.
 - **Hardware cible** : Colab T4 gratuit, ~1–2h.
 - **Logging** : un seul fichier `training_log.json` (loss train/val par epoch, hyperparams, durée). Pas de MLflow/W&B.
-- **Publication** : push de l'adapter sur HF Hub `{HF_USERNAME}/chronos-github-commits`.
+- **Publication** : push de l'adapter sur HF Hub `NaifSaleem/chronos-github-commits`.
 
 ### Évaluation
 
