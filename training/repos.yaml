@@ -1,6 +1,6 @@
 # Curated GitHub repos for training/validation of repo-pulse.
-# Criteria: age >= 3 years (created on or before 2023-01-01),
-# diverse domains & sizes, no hard forks.
+# Criteria: created on or before 2022-05-01 (>=48 months of history),
+# diverse domains & sizes, no hard forks, active in 2024+.
 
 train:
   # ML / DL frameworks & libs
@@ -16,6 +16,34 @@ train:
   - explosion/spaCy
   - ultralytics/yolov5
   - fastai/fastai
+  - huggingface/datasets
+  - huggingface/tokenizers
+  - huggingface/accelerate
+  - huggingface/diffusers
+  - pytorch/vision
+  - pytorch/audio
+  - pytorch/text
+  - pytorch/ignite
+  - Lightning-AI/pytorch-lightning
+  - catboost/catboost
+  - rwightman/pytorch-image-models
+  - facebookresearch/detectron2
+  - facebookresearch/fairseq
+  - open-mmlab/mmdetection
+  - open-mmlab/mmsegmentation
+  - open-mmlab/mmcv
+  - allenai/allennlp
+  - RasaHQ/rasa
+  - deepset-ai/haystack
+  - microsoft/nni
+  - optuna/optuna
+  - ray-project/ray
+  - dask/dask
+  - mlflow/mlflow
+  - apache/airflow
+  - kubeflow/kubeflow
+  - google/jax
+  - google/flax
 
   # Web frameworks & libs
   - facebook/react
@@ -32,6 +60,34 @@ train:
   - emberjs/ember.js
   - preactjs/preact
   - fastify/fastify
+  - tiangolo/fastapi
+  - encode/django-rest-framework
+  - encode/starlette
+  - encode/httpx
+  - encode/uvicorn
+  - aiohttp/aiohttp
+  - tornadoweb/tornado
+  - strapi/strapi
+  - ghost/ghost
+  - directus/directus
+  - phoenixframework/phoenix
+  - gin-gonic/gin
+  - labstack/echo
+  - gofiber/fiber
+  - actix/actix-web
+  - rocket-rs/rocket
+  - tokio-rs/axum
+  - cypress-io/cypress
+  - puppeteer/puppeteer
+  - microsoft/playwright
+  - reduxjs/redux
+  - reduxjs/redux-toolkit
+  - facebook/relay
+  - apollographql/apollo-client
+  - apollographql/apollo-server
+  - graphql/graphql-js
+  - prisma/prisma
+  - typeorm/typeorm
 
   # Infra / DevOps / containerization
   - kubernetes/kubernetes
@@ -44,6 +100,40 @@ train:
   - containerd/containerd
   - istio/istio
   - argoproj/argo-cd
+  - argoproj/argo-workflows
+  - argoproj/argo-rollouts
+  - argoproj/argo-events
+  - kubernetes/minikube
+  - kubernetes-sigs/kind
+  - kubernetes/kubectl
+  - kubernetes/dashboard
+  - kubernetes-sigs/kustomize
+  - kubernetes-sigs/external-dns
+  - kubernetes/ingress-nginx
+  - fluxcd/flux2
+  - rancher/rancher
+  - rancher/k3s
+  - opencontainers/runc
+  - cri-o/cri-o
+  - containers/podman
+  - docker/compose
+  - docker/buildx
+  - docker/cli
+  - hashicorp/packer
+  - hashicorp/nomad
+  - pulumi/pulumi
+  - jenkinsci/jenkins
+  - tektoncd/pipeline
+  - thanos-io/thanos
+  - cortexproject/cortex
+  - VictoriaMetrics/VictoriaMetrics
+  - jaegertracing/jaeger
+  - openzipkin/zipkin
+  - fluent/fluentd
+  - fluent/fluent-bit
+  - elastic/logstash
+  - elastic/beats
+  - elastic/kibana
 
   # Programming language compilers & runtimes
   - rust-lang/rust
@@ -54,6 +144,35 @@ train:
   - nodejs/node
   - ruby/ruby
   - php/php-src
+  - microsoft/TypeScript
+  - denoland/deno
+  - oven-sh/bun
+  - rust-lang/rustlings
+  - rust-lang/cargo
+  - rust-lang/rustfmt
+  - rust-lang/rust-clippy
+  - rust-lang/rust-analyzer
+  - golang/tools
+  - golang/protobuf
+  - python/mypy
+  - python/typeshed
+  - microsoft/pyright
+  - astral-sh/ruff
+  - psf/black
+  - pylint-dev/pylint
+  - PyCQA/flake8
+  - dotnet/roslyn
+  - dotnet/aspnetcore
+  - dotnet/efcore
+  - dotnet/maui
+  - JetBrains/intellij-community
+  - graalvm/graalvm-ce-builds
+  - WebAssembly/binaryen
+  - bytecodealliance/wasmtime
+  - llvm/llvm-project
+  - tree-sitter/tree-sitter
+  - ziglang/zig
+  - ocaml/ocaml
 
   # Scientific computing / numerical
   - numpy/numpy
@@ -62,8 +181,20 @@ train:
   - matplotlib/matplotlib
   - sympy/sympy
   - statsmodels/statsmodels
-  - mlpack/mlpack
-  - Theano/Theano
+  - scikit-image/scikit-image
+  - networkx/networkx
+  - bokeh/bokeh
+  - plotly/plotly.py
+  - plotly/dash
+  - seaborn/seaborn
+  - jupyter/notebook
+  - jupyterlab/jupyterlab
+  - ipython/ipython
+  - astropy/astropy
+  - biopython/biopython
+  - cupy/cupy
+  - dask/distributed
+  - h5py/h5py
 
   # Databases / data stores
   - postgres/postgres
@@ -73,6 +204,25 @@ train:
   - elastic/elasticsearch
   - apache/cassandra
   - cockroachdb/cockroach
+  - mariadb/server
+  - percona/percona-server
+  - tikv/tikv
+  - pingcap/tidb
+  - yugabyte/yugabyte-db
+  - clickhouse/ClickHouse
+  - apache/couchdb
+  - apache/hbase
+  - apache/druid
+  - apache/pinot
+  - timescale/timescaledb
+  - duckdb/duckdb
+  - neo4j/neo4j
+  - meilisearch/meilisearch
+  - milvus-io/milvus
+  - weaviate/weaviate
+  - qdrant/qdrant
+  - apache/kafka
+  - apache/pulsar
 
   # CLI tools & dev tools
   - cli/cli
@@ -85,6 +235,29 @@ train:
   - charmbracelet/bubbletea
   - asdf-vm/asdf
   - yt-dlp/yt-dlp
+  - sharkdp/hyperfine
+  - dandavison/delta
+  - ogham/exa
+  - eza-community/eza
+  - bootandy/dust
+  - XAMPPRocky/tokei
+  - ClementTsang/bottom
+  - aristocratos/btop
+  - ohmyzsh/ohmyzsh
+  - starship/starship
+  - mozilla/sccache
+  - pyenv/pyenv
+  - nvm-sh/nvm
+  - kubernetes-sigs/krew
+  - derailed/k9s
+  - ahmetb/kubectx
+  - mikefarah/yq
+  - charmbracelet/gum
+  - charmbracelet/glow
+  - jesseduffield/lazygit
+  - jesseduffield/lazydocker
+  - extrawurst/gitui
+  - magit/magit
 
   # Editors / IDEs / shells
   - neovim/neovim
@@ -93,6 +266,22 @@ train:
   - emacs-mirror/emacs
   - fish-shell/fish-shell
   - zsh-users/zsh
+  - microsoft/PowerToys
+  - PowerShell/PowerShell
+  - microsoft/monaco-editor
+  - codemirror/codemirror5
+  - atom/atom
+  - eclipse-platform/eclipse.platform
+  - syl20bnr/spacemacs
+  - doomemacs/doomemacs
+  - LunarVim/LunarVim
+  - NvChad/NvChad
+  - AstroNvim/AstroNvim
+  - tmux-plugins/tpm
+  - gnachman/iTerm2
+  - alacritty/alacritty
+  - kovidgoyal/kitty
+  - wez/wezterm
 
   # Mobile / cross-platform
   - flutter/flutter
@@ -101,6 +290,28 @@ train:
   - NativeScript/NativeScript
   - expo/expo
   - apache/cordova-android
+  - apache/cordova-ios
+  - electron/electron
+  - tauri-apps/tauri
+  - microsoft/react-native-windows
+  - dart-lang/sdk
+  - facebook/yoga
+  - airbnb/lottie-android
+  - airbnb/lottie-ios
+  - airbnb/lottie-web
+  - square/retrofit
+  - square/okhttp
+  - square/picasso
+  - square/leakcanary
+  - bumptech/glide
+  - ReactiveX/RxJava
+  - ReactiveX/RxSwift
+  - Alamofire/Alamofire
+  - SwiftyJSON/SwiftyJSON
+  - realm/realm-swift
+  - realm/realm-java
+  - SDWebImage/SDWebImage
+  - CocoaPods/CocoaPods
 
   # Security / cryptography
   - openssl/openssl
@@ -108,6 +319,24 @@ train:
   - OWASP/CheatSheetSeries
   - hashicorp/vault
   - wolfSSL/wolfssl
+  - mozilla/sops
+  - bitwarden/server
+  - keepassxreboot/keepassxc
+  - jedisct1/libsodium
+  - openssh/openssh-portable
+  - gpg/gnupg
+  - aquasecurity/trivy
+  - anchore/grype
+  - anchore/syft
+  - aquasecurity/tfsec
+  - bridgecrewio/checkov
+  - kubernetes/kube-bench
+  - falcosecurity/falco
+  - OISF/suricata
+  - zaproxy/zaproxy
+  - sqlmapproject/sqlmap
+  - nmap/nmap
+  - rapid7/metasploit-framework
 
   # Build tools / package managers
   - webpack/webpack
@@ -115,18 +344,57 @@ train:
   - gradle/gradle
   - bazelbuild/bazel
   - pypa/pip
+  - pypa/setuptools
+  - pypa/virtualenv
+  - pypa/pipenv
+  - python-poetry/poetry
+  - vitejs/vite
+  - evanw/esbuild
+  - swc-project/swc
+  - babel/babel
+  - postcss/postcss
+  - sass/dart-sass
+  - npm/npm
+  - pnpm/pnpm
+  - yarnpkg/yarn
+  - mesonbuild/meson
+  - ninja-build/ninja
+  - Kitware/CMake
+  - Homebrew/brew
+  - Homebrew/homebrew-core
 
   # Game engines / graphics
   - godotengine/godot
   - mrdoob/three.js
   - libgdx/libgdx
   - pixijs/pixijs
+  - cocos2d/cocos2d-x
+  - love2d/love
+  - SFML/SFML
+  - mono/MonoGame
+  - bkaradzic/bgfx
+  - ocornut/imgui
+  - g-truc/glm
+  - assimp/assimp
+  - glfw/glfw
+  - KhronosGroup/glTF
+  - blender/blender
 
   # Static site generators / docs tools
   - gohugoio/hugo
   - jekyll/jekyll
   - getpelican/pelican
   - sphinx-doc/sphinx
+  - gatsbyjs/gatsby
+  - 11ty/eleventy
+  - mkdocs/mkdocs
+  - squidfunk/mkdocs-material
+  - readthedocs/readthedocs.org
+  - asciidoctor/asciidoctor
+  - vuejs/vitepress
+  - vuejs/vuepress
+  - hexojs/hexo
+  - getzola/zola
 
   # Networking / observability
   - envoyproxy/envoy
@@ -135,22 +403,78 @@ train:
   - traefik/traefik
   - wireshark/wireshark
   - haproxy/haproxy
+  - caddyserver/caddy
+  - apache/httpd
+  - lighttpd/lighttpd
+  - openresty/openresty
+  - kong/kong
+  - tyktechnologies/tyk
+  - apache/apisix
+  - linkerd/linkerd2
+  - open-policy-agent/opa
+  - open-policy-agent/gatekeeper
+  - knative/serving
+  - knative/eventing
+  - openfaas/faas
+  - influxdata/telegraf
+  - netdata/netdata
+  - osquery/osquery
 
   # Operating systems / kernels
   - torvalds/linux
   - freebsd/freebsd-src
   - illumos/illumos-gate
   - NetBSD/src
+  - openbsd/src
+  - reactos/reactos
+  - haiku/haiku
+  - redox-os/redox
+  - coreutils/coreutils
+  - util-linux/util-linux
+  - systemd/systemd
 
   # Robotics / IoT
   - ros/ros
   - ros2/ros2
   - PX4/PX4-Autopilot
+  - ArduPilot/ardupilot
+  - betaflight/betaflight
+  - mavlink/mavlink
+  - espressif/esp-idf
+  - arduino/Arduino
+  - platformio/platformio-core
+  - zephyrproject-rtos/zephyr
+  - RIOT-OS/RIOT
+  - nodemcu/nodemcu-firmware
+  - arendst/Tasmota
+  - esphome/esphome
+  - home-assistant/core
+  - home-assistant/frontend
+  - openhab/openhab-core
+  - Mbed-TLS/mbedtls
 
   # Cloud-native SDKs
   - aws/aws-sdk-go
   - googleapis/google-cloud-python
   - Azure/azure-sdk-for-python
+  - aws/aws-sdk-js
+  - aws/aws-sdk-java
+  - aws/aws-sdk-ruby
+  - aws/aws-sdk-php
+  - aws/aws-cli
+  - aws/aws-cdk
+  - aws/chalice
+  - aws/serverless-application-model
+  - Azure/azure-sdk-for-net
+  - Azure/azure-sdk-for-js
+  - Azure/azure-cli
+  - Azure/bicep
+  - googleapis/google-cloud-go
+  - googleapis/google-cloud-node
+  - googleapis/google-cloud-java
+  - hashicorp/terraform-provider-aws
+  - hashicorp/terraform-provider-azurerm
+  - hashicorp/terraform-provider-google
 
   # Misc useful libs
   - lodash/lodash
@@ -158,6 +482,42 @@ train:
   - protocolbuffers/protobuf
   - curl/curl
   - ffmpeg/FFmpeg
+  - moment/moment
+  - date-fns/date-fns
+  - moment/luxon
+  - iamkun/dayjs
+  - jashkenas/underscore
+  - ramda/ramda
+  - immutable-js/immutable-js
+  - mobxjs/mobx
+  - ReactiveX/rxjs
+  - socketio/socket.io
+  - websockets/ws
+  - node-fetch/node-fetch
+  - sindresorhus/got
+  - chalk/chalk
+  - tj/commander.js
+  - yargs/yargs
+  - winstonjs/winston
+  - pinojs/pino
+  - mochajs/mocha
+  - jestjs/jest
+  - validatorjs/validator.js
+  - colinhacks/zod
+  - mui/material-ui
+  - ant-design/ant-design
+  - chakra-ui/chakra-ui
+  - mantinedev/mantine
+  - JedWatson/classnames
+  - lukeed/clsx
+  - styled-components/styled-components
+  - emotion-js/emotion
+  - reduxjs/reselect
+  - TanStack/query
+  - TanStack/table
+  - formatjs/formatjs
+  - i18next/i18next
+  - storybookjs/storybook
 
 validation:
   # ML / data
@@ -165,53 +525,146 @@ validation:
   - apache/arrow
   - onnx/onnx
   - openai/gym
+  - apache/flink
+  - apache/beam
+  - apache/hadoop
+  - apache/hive
+  - h2oai/h2o-3
+  - microsoft/onnxruntime
+  - tensorflow/models
+  - tensorflow/serving
+  - tensorflow/tfjs
+  - tensorflow/datasets
+  - google-research/bert
+  - facebookresearch/faiss
+  - facebookresearch/ParlAI
+  - NVIDIA/apex
+  - NVIDIA/DALI
+  - pytorch/serve
 
+  - google/dopamine
   # Web
   - vercel/next.js
   - nuxt/nuxt
   - remix-run/remix
   - tailwindlabs/tailwindcss
+  - vercel/swr
+  - vercel/turbo
+  - facebook/create-react-app
+  - solidjs/solid
+  - lit/lit
+  - aurelia/aurelia
+  - marko-js/marko
+  - vuejs/core
+  - withastro/astro
+  - umijs/umi
 
+  - vapor/vapor
   # Infra / cloud
   - etcd-io/etcd
   - hashicorp/consul
   - influxdata/influxdb
+  - openshift/origin
+  - openebs/openebs
+  - longhorn/longhorn
+  - rook/rook
+  - vitessio/vitess
+  - google/cadvisor
 
+  - kubernetes-sigs/cluster-api
+  - kubernetes-sigs/metrics-server
   # Languages / runtimes
   - JetBrains/kotlin
   - apple/swift
   - scala/scala
   - elixir-lang/elixir
+  - erlang/otp
+  - lua/lua
+  - micropython/micropython
+  - dlang/dmd
+  - mono/mono
 
+  - gleam-lang/gleam
   # Databases
   - sqlite/sqlite
   - prometheus/alertmanager
+  - apache/ignite
+  - scylladb/scylladb
+  - surrealdb/surrealdb
+  - apache/orc
+  - apache/parquet-mr
 
+  - apache/zookeeper
   # CLI / dev tools
   - git/git
   - microsoft/terminal
   - sharkdp/fd
+  - dbcli/pgcli
+  - dbcli/mycli
+  - ranger/ranger
+  - gokcehan/lf
+  - mholt/archiver
+  - peco/peco
 
   # Editors / mobile
   - bitwarden/clients
   - ionic-team/capacitor
+  - flutter/engine
+  - JetBrains/kotlin-native
+  - facebook/hermes
 
   # Security
   - jwtk/jjwt
   - sigstore/cosign
+  - cilium/tetragon
+  - aquasecurity/kube-hunter
+  - projectcalico/calico
+  - letsencrypt/boulder
 
   # Build / package
   - npm/cli
   - yarnpkg/berry
+  - rust-lang/crates.io
+  - apache/ant
+  - lerna/lerna
+  - changesets/changesets
+  - microsoft/rushstack
 
   # Graphics / games
   - bevyengine/bevy
+  - OpenRA/OpenRA
+  - minetest/minetest
+  - 0ad/0ad
+  - supertuxkart/stk-code
+  - urho3d/Urho3D
 
   # Docs / static
   - facebook/docusaurus
+  - rust-lang/mdBook
+  - quarto-dev/quarto-cli
 
   # Networking
   - cilium/cilium
+  - projectcontour/contour
+  - emqx/emqx
+  - eclipse/mosquitto
+  - rabbitmq/rabbitmq-server
+  - apache/activemq
 
   # OS
   - SerenityOS/serenity
+  - tianocore/edk2
+  - qemu/qemu
+
+  - rust-lang/rustup
+  # Misc libs
+  - protobufjs/protobuf.js
+  - grpc/grpc
+  - grpc/grpc-go
+  - grpc/grpc-java
+  - grpc/grpc-node
+  - apache/thrift
+  - msgpack/msgpack
+
+  - expressjs/cors
+  - helmetjs/helmet
