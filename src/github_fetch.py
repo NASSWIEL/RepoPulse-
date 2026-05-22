@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import os
 import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
@@ -10,6 +11,11 @@ from pathlib import Path
 
 import pandas as pd
 import requests
+import urllib3
+
+VERIFY_SSL = os.getenv("GITHUB_VERIFY_SSL", "true").lower() not in {"false", "0", "no"}
+if not VERIFY_SSL:
+    urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 logger = logging.getLogger(__name__)
 
@@ -79,6 +85,7 @@ def fetch_commits(
         return pd.read_parquet(path)
 
     session = requests.Session()
+    session.verify = VERIFY_SSL
     if token:
         session.headers["Authorization"] = f"Bearer {token}"
     session.headers["Accept"] = "application/vnd.github+json"
