@@ -15,7 +15,7 @@ def to_monthly(commits: pd.DataFrame) -> pd.Series:
         return pd.Series([], dtype="int64", name="commits",
                          index=pd.PeriodIndex([], freq="M"))
 
-    dates = pd.to_datetime(commits["date"], utc=True)
+    dates = pd.to_datetime(commits["date"], utc=True).dt.tz_localize(None)
     months = dates.dt.to_period("M")
     counts = months.value_counts().sort_index()
 
