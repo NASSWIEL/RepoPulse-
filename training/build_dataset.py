@@ -56,6 +56,7 @@ def main(
                 spec.repo,
                 token=token,
                 wait_on_rate_limit=True,
+                max_pages=250,
             )
         except RepoNotFoundError:
             print(f"[{idx}/{total}] SKIP {entry}: not found", flush=True)
