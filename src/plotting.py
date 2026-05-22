@@ -1,7 +1,8 @@
 """Plotly figure rendering for history + multiple forecasts."""
+
 from __future__ import annotations
 
-from typing import Sequence
+from collections.abc import Sequence
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -27,13 +28,15 @@ def make_figure(
 ) -> go.Figure:
     fig = go.Figure()
 
-    fig.add_trace(go.Scatter(
-        x=_period_to_timestamp(history.index),
-        y=history.values,
-        mode="lines",
-        name="History",
-        line=dict(color="#475569", width=2),
-    ))
+    fig.add_trace(
+        go.Scatter(
+            x=_period_to_timestamp(history.index),
+            y=history.values,
+            mode="lines",
+            name="History",
+            line=dict(color="#475569", width=2),
+        )
+    )
 
     last_period = history.index[-1]
     horizon = len(forecasts[0].mean) if forecasts else 0
@@ -42,23 +45,32 @@ def make_figure(
 
     for f in forecasts:
         color = _COLORS.get(f.model_name, "#64748b")
-        fig.add_trace(go.Scatter(
-            x=future_ts, y=f.mean, mode="lines",
-            name=f.model_name,
-            line=dict(color=color, width=2,
-                      dash="dot" if f.model_name == "naive_seasonal" else "solid"),
-        ))
+        fig.add_trace(
+            go.Scatter(
+                x=future_ts,
+                y=f.mean,
+                mode="lines",
+                name=f.model_name,
+                line=dict(
+                    color=color,
+                    width=2,
+                    dash="dot" if f.model_name == "naive_seasonal" else "solid",
+                ),
+            )
+        )
         if "chronos_finetuned" in f.model_name:
-            fig.add_trace(go.Scatter(
-                x=list(future_ts) + list(future_ts[::-1]),
-                y=list(f.upper) + list(f.lower[::-1]),
-                fill="toself",
-                fillcolor="rgba(99,102,241,0.15)",
-                line=dict(width=0),
-                hoverinfo="skip",
-                showlegend=False,
-                name=f"{f.model_name}_ci",
-            ))
+            fig.add_trace(
+                go.Scatter(
+                    x=list(future_ts) + list(future_ts[::-1]),
+                    y=list(f.upper) + list(f.lower[::-1]),
+                    fill="toself",
+                    fillcolor="rgba(99,102,241,0.15)",
+                    line=dict(width=0),
+                    hoverinfo="skip",
+                    showlegend=False,
+                    name=f"{f.model_name}_ci",
+                )
+            )
 
     fig.update_layout(
         title=f"Monthly commits forecast — {repo_label}",

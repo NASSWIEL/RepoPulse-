@@ -1,4 +1,5 @@
 """Evaluate fine-tuned Chronos vs zero-shot vs naive baseline on the validation split."""
+
 from __future__ import annotations
 
 import argparse
@@ -25,7 +26,9 @@ def evaluate(
 
     forecasters = {
         "ours_ft": ChronosFineTuned(
-            base_model_id=base_model, adapter_id=str(adapter_path), allow_fallback=False,
+            base_model_id=base_model,
+            adapter_id=str(adapter_path),
+            allow_fallback=False,
         ),
         "chronos_zs": ChronosZeroShot(model_id=base_model),
         "naive": NaiveSeasonal(period=12),
@@ -42,14 +45,16 @@ def evaluate(
             for name, f in forecasters.items():
                 s = pd.Series(train, name="commits")
                 res = f.forecast(s, horizon=h)
-                rows.append({
-                    "repo": repo,
-                    "horizon": h,
-                    "model": name,
-                    "smape": smape(truth, res.mean),
-                    "mae": mae(truth, res.mean),
-                    "latency_ms": res.latency_ms,
-                })
+                rows.append(
+                    {
+                        "repo": repo,
+                        "horizon": h,
+                        "model": name,
+                        "smape": smape(truth, res.mean),
+                        "mae": mae(truth, res.mean),
+                        "latency_ms": res.latency_ms,
+                    }
+                )
     return pd.DataFrame(rows)
 
 

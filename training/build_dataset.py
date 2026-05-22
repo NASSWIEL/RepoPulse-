@@ -1,11 +1,12 @@
 """Build the GitHub monthly commits dataset from a curated repo list."""
+
 from __future__ import annotations
 
 import argparse
 import logging
 import os
+from collections.abc import Mapping
 from pathlib import Path
-from typing import Mapping
 
 import pandas as pd
 import yaml
@@ -21,12 +22,14 @@ def build_dataset_from_series(series_map: Mapping[str, pd.Series]) -> pd.DataFra
     rows = []
     for repo, s in series_map.items():
         for i, (period, val) in enumerate(s.items()):
-            rows.append({
-                "repo": repo,
-                "month": period.to_timestamp(),
-                "commits": int(val),
-                "months_since_start": i,
-            })
+            rows.append(
+                {
+                    "repo": repo,
+                    "month": period.to_timestamp(),
+                    "commits": int(val),
+                    "months_since_start": i,
+                }
+            )
     return pd.DataFrame(rows)
 
 

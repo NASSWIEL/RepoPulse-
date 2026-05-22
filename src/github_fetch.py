@@ -1,4 +1,5 @@
 """Fetch commit timestamps for a GitHub repository, with disk cache."""
+
 from __future__ import annotations
 
 import logging
@@ -6,7 +7,6 @@ import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
-from typing import Optional
 
 import pandas as pd
 import requests
@@ -65,7 +65,7 @@ def _cache_is_fresh(path: Path) -> bool:
 def fetch_commits(
     owner: str,
     repo: str,
-    token: Optional[str] = None,
+    token: str | None = None,
     cache_dir: Path = DEFAULT_CACHE_DIR,
     per_page: int = 100,
     max_pages: int = 500,
@@ -98,10 +98,12 @@ def fetch_commits(
         resp.raise_for_status()
 
         for item in resp.json():
-            rows.append({
-                "date": item["commit"]["author"]["date"],
-                "sha": item["sha"],
-            })
+            rows.append(
+                {
+                    "date": item["commit"]["author"]["date"],
+                    "sha": item["sha"],
+                }
+            )
 
         pages += 1
         link = resp.headers.get("Link", "")
@@ -115,6 +117,11 @@ def fetch_commits(
     if not df.empty:
         df["date"] = pd.to_datetime(df["date"], utc=True)
     else:
-        df = pd.DataFrame({"date": pd.Series(dtype="datetime64[ns, UTC]"), "sha": pd.Series(dtype="object")})
+        df = pd.DataFrame(
+            {
+                "date": pd.Series(dtype="datetime64[ns, UTC]"),
+                "sha": pd.Series(dtype="object"),
+            }
+        )
     df.to_parquet(path, index=False)
     return df

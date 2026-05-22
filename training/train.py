@@ -2,21 +2,21 @@
 
 Designed to run on a single T4 GPU (Colab free).
 """
+
 from __future__ import annotations
 
 import argparse
 import json
 import logging
-import os
 from dataclasses import dataclass
 from pathlib import Path
 
 import numpy as np
 import pandas as pd
 import torch
+from dotenv import load_dotenv
 from torch.utils.data import DataLoader, Dataset
 from transformers import get_linear_schedule_with_warmup
-from dotenv import load_dotenv
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,7 @@ class TrainConfig:
 class MonthlyCommitsWindowDataset(Dataset):
     def __init__(self, df: pd.DataFrame, context_length: int, prediction_length: int, stride: int):
         self.windows = []
-        for repo, group in df.sort_values(["repo", "month"]).groupby("repo"):
+        for _repo, group in df.sort_values(["repo", "month"]).groupby("repo"):
             values = group["commits"].astype(np.float32).values
             n_needed = context_length + prediction_length
             if len(values) < n_needed:
@@ -70,9 +70,13 @@ def collate(batch):
 
 def load_chronos_with_lora(cfg: TrainConfig):
     from chronos import ChronosPipeline
-    from peft import LoraConfig, get_peft_model, TaskType
+    from peft import LoraConfig, TaskType, get_peft_model
 
-    pipe = ChronosPipeline.from_pretrained(cfg.base_model, device_map="auto", torch_dtype=torch.float32)
+    pipe = ChronosPipeline.from_pretrained(
+        cfg.base_model,
+        device_map="auto",
+        torch_dtype=torch.float32,
+    )
     lora = LoraConfig(
         r=cfg.lora_r,
         lora_alpha=cfg.lora_alpha,
@@ -86,7 +90,11 @@ def load_chronos_with_lora(cfg: TrainConfig):
     return pipe
 
 
-def compute_chronos_loss(pipe, context_batch: torch.Tensor, target_batch: torch.Tensor) -> torch.Tensor:
+def compute_chronos_loss(
+    pipe,
+    context_batch: torch.Tensor,
+    target_batch: torch.Tensor,
+) -> torch.Tensor:
     """Use Chronos's tokenizer to encode context+target, then run T5 with labels."""
     tokenizer = pipe.model.tokenizer
     device = next(pipe.model.model.parameters()).device
@@ -110,8 +118,18 @@ def train(cfg: TrainConfig):
     train_df = pd.read_parquet(cfg.train_parquet)
     val_df = pd.read_parquet(cfg.val_parquet)
 
-    train_ds = MonthlyCommitsWindowDataset(train_df, cfg.context_length, cfg.prediction_length, cfg.stride)
-    val_ds = MonthlyCommitsWindowDataset(val_df, cfg.context_length, cfg.prediction_length, cfg.stride)
+    train_ds = MonthlyCommitsWindowDataset(
+        train_df,
+        cfg.context_length,
+        cfg.prediction_length,
+        cfg.stride,
+    )
+    val_ds = MonthlyCommitsWindowDataset(
+        val_df,
+        cfg.context_length,
+        cfg.prediction_length,
+        cfg.stride,
+    )
 
     train_loader = DataLoader(train_ds, batch_size=cfg.batch_size, shuffle=True, collate_fn=collate)
     val_loader = DataLoader(val_ds, batch_size=cfg.batch_size, shuffle=False, collate_fn=collate)
@@ -121,11 +139,14 @@ def train(cfg: TrainConfig):
 
     optimizer = torch.optim.AdamW(
         [p for p in pipe.model.model.parameters() if p.requires_grad],
-        lr=cfg.learning_rate, weight_decay=cfg.weight_decay,
+        lr=cfg.learning_rate,
+        weight_decay=cfg.weight_decay,
     )
     total_steps = len(train_loader) * cfg.epochs
     scheduler = get_linear_schedule_with_warmup(
-        optimizer, int(total_steps * cfg.warmup_ratio), total_steps,
+        optimizer,
+        int(total_steps * cfg.warmup_ratio),
+        total_steps,
     )
 
     log = {"epochs": [], "config": cfg.__dict__.copy()}
@@ -170,13 +191,23 @@ if __name__ == "__main__":
     logging.basicConfig(level=logging.INFO)
     load_dotenv()
     p = argparse.ArgumentParser()
-    p.add_argument("--train-parquet", type=Path, default=Path("data/training_dataset_train.parquet"))
-    p.add_argument("--val-parquet", type=Path, default=Path("data/training_dataset_validation.parquet"))
+    p.add_argument(
+        "--train-parquet",
+        type=Path,
+        default=Path("data/training_dataset_train.parquet"),
+    )
+    p.add_argument(
+        "--val-parquet",
+        type=Path,
+        default=Path("data/training_dataset_validation.parquet"),
+    )
     p.add_argument("--output-dir", type=Path, default=Path("models/chronos-github"))
     p.add_argument("--epochs", type=int, default=3)
     args = p.parse_args()
     cfg = TrainConfig(
-        train_parquet=args.train_parquet, val_parquet=args.val_parquet,
-        output_dir=args.output_dir, epochs=args.epochs,
+        train_parquet=args.train_parquet,
+        val_parquet=args.val_parquet,
+        output_dir=args.output_dir,
+        epochs=args.epochs,
     )
     train(cfg)

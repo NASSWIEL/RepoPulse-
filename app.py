@@ -1,4 +1,5 @@
 """Gradio app: paste a GitHub repo URL, get a monthly commit forecast."""
+
 from __future__ import annotations
 
 import logging
@@ -101,7 +102,8 @@ def build_app() -> gr.Blocks:
             chart = gr.Plot()
             gr.Markdown("### Backtest on last 12 months (held-out)")
             table = gr.Dataframe(
-                headers=["model", "smape", "mae", "latency_ms"], interactive=False,
+                headers=["model", "smape", "mae", "latency_ms"],
+                interactive=False,
             )
 
         def _predict_and_show(u, h):
@@ -114,11 +116,13 @@ def build_app() -> gr.Blocks:
             }
 
         btn.click(
-            _predict_and_show, inputs=[url, horizon],
+            _predict_and_show,
+            inputs=[url, horizon],
             outputs=[results, chart, label, table],
         )
         url.submit(
-            _predict_and_show, inputs=[url, horizon],
+            _predict_and_show,
+            inputs=[url, horizon],
             outputs=[results, chart, label, table],
         )
 

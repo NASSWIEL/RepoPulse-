@@ -1,4 +1,5 @@
 """Aggregate raw commit timestamps into a monthly time series."""
+
 from __future__ import annotations
 
 import pandas as pd
@@ -12,8 +13,7 @@ def to_monthly(commits: pd.DataFrame) -> pd.Series:
     Missing months between min and max date are filled with 0.
     """
     if commits.empty:
-        return pd.Series([], dtype="int64", name="commits",
-                         index=pd.PeriodIndex([], freq="M"))
+        return pd.Series([], dtype="int64", name="commits", index=pd.PeriodIndex([], freq="M"))
 
     dates = pd.to_datetime(commits["date"], utc=True).dt.tz_localize(None)
     months = dates.dt.to_period("M")
