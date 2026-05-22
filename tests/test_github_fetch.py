@@ -84,3 +84,21 @@ def test_fetch_commits_raises_on_404(tmp_path):
 
     with pytest.raises(RepoNotFoundError):
         fetch_commits("foo", "bar", token="fake", cache_dir=tmp_path)
+
+
+@responses.activate
+def test_fetch_commits_raises_on_rate_limit(tmp_path):
+    from src.github_fetch import RateLimitError, fetch_commits
+
+    reset_ts = 1_900_000_000
+    responses.add(
+        responses.GET,
+        "https://api.github.com/repos/foo/bar/commits",
+        status=403,
+        json={"message": "API rate limit exceeded"},
+        headers={"X-RateLimit-Reset": str(reset_ts), "X-RateLimit-Remaining": "0"},
+    )
+
+    with pytest.raises(RateLimitError) as exc:
+        fetch_commits("foo", "bar", token="fake", cache_dir=tmp_path)
+    assert exc.value.reset_at.timestamp() == reset_ts
