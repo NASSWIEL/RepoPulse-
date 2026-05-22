@@ -1,0 +1,13 @@
+gradio>=4.0,<5.0
+chronos-forecasting>=1.4.0
+transformers>=4.40.0
+peft>=0.10.0
+torch>=2.1.0
+pandas>=2.0.0
+numpy>=1.24.0
+pyarrow>=15.0.0
+plotly>=5.18.0
+requests>=2.31.0
+pyyaml>=6.0
+python-dotenv>=1.0.0
+huggingface-hub>=0.23.0
