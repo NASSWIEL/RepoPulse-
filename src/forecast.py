@@ -81,3 +81,43 @@ class ChronosZeroShot:
         latency = (time.perf_counter() - t0) * 1000
         return ForecastResult(mean=mean, lower=lower, upper=upper,
                               latency_ms=latency, model_name=self.model_name)
+
+
+class ChronosFineTuned(ChronosZeroShot):
+    model_name = "chronos_finetuned"
+
+    def __init__(
+        self,
+        base_model_id: str = "amazon/chronos-t5-small",
+        adapter_id: Optional[str] = None,
+        num_samples: int = 50,
+        allow_fallback: bool = True,
+    ):
+        super().__init__(model_id=base_model_id, num_samples=num_samples)
+        self.adapter_id = adapter_id
+        self.allow_fallback = allow_fallback
+        self._loaded_with_adapter = False
+
+    def _load(self):
+        if self._pipeline is not None:
+            return self._pipeline
+        from chronos import ChronosPipeline
+        import torch
+
+        try:
+            pipe = ChronosPipeline.from_pretrained(
+                self.model_id, device_map="cpu", torch_dtype=torch.float32,
+            )
+            if self.adapter_id:
+                from peft import PeftModel
+                pipe.model.model = PeftModel.from_pretrained(pipe.model.model, self.adapter_id)
+                self._loaded_with_adapter = True
+            self._pipeline = pipe
+        except Exception:
+            if not self.allow_fallback:
+                raise
+            self.model_name = "chronos_finetuned_fallback"
+            self._pipeline = ChronosPipeline.from_pretrained(
+                self.model_id, device_map="cpu", torch_dtype=torch.float32,
+            )
+        return self._pipeline

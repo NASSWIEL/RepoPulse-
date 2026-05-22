@@ -57,3 +57,18 @@ def test_chronos_zero_shot_returns_sane_forecast():
     assert (res.upper >= res.mean).all()
     assert (res.lower <= res.mean).all()
     assert res.model_name == "chronos_zero_shot"
+
+
+@pytest.mark.slow
+def test_chronos_finetuned_falls_back_when_adapter_missing():
+    from src.forecast import ChronosFineTuned
+
+    s = _series(list(range(1, 25)))
+    forecaster = ChronosFineTuned(
+        base_model_id="amazon/chronos-t5-tiny",
+        adapter_id="nonexistent/adapter-does-not-exist",
+        allow_fallback=True,
+    )
+    res = forecaster.forecast(s, horizon=6)
+    assert res.model_name in ("chronos_finetuned", "chronos_finetuned_fallback")
+    assert len(res.mean) == 6
