@@ -154,6 +154,170 @@ def _save_monthly_cache(cache_path: Path, s: pd.Series) -> None:
     df.to_parquet(cache_path, index=False)
 
 
+def _paginate(
+    session: requests.Session,
+    url: str,
+    params: dict,
+    max_pages: int,
+    since: datetime | None = None,
+    date_field: str = "created_at",
+) -> list[dict]:
+    """Paginate a GitHub list endpoint, stopping early if items predate `since`."""
+    rows: list[dict] = []
+    pages = 0
+    while url and pages < max_pages:
+        resp = session.get(url, params=params if pages == 0 else None, timeout=30)
+        if resp.status_code == 404:
+            return rows
+        if resp.status_code == 403 and "rate limit" in resp.text.lower():
+            reset = int(resp.headers.get("X-RateLimit-Reset", "0"))
+            wait = max(0, reset - int(time.time())) + 5
+            time.sleep(wait)
+            continue
+        if resp.status_code != 200:
+            break
+        items = resp.json()
+        if not items:
+            break
+        for item in items:
+            rows.append(item)
+        pages += 1
+        link = resp.headers.get("Link", "")
+        next_url = None
+        for part in link.split(","):
+            if 'rel="next"' in part:
+                next_url = part.split(";")[0].strip().strip("<>")
+        url = next_url
+    return rows
+
+
+def fetch_repo_monthly_stats(
+    owner: str,
+    repo: str,
+    token: str | None = None,
+    cache_dir: Path = DEFAULT_CACHE_DIR,
+    years_back: int = 5,
+    max_pages: int = 30,
+) -> pd.DataFrame:
+    """Fetch commits, PRs opened, issues opened, stars gained — aggregated by month.
+
+    Returns a DataFrame indexed by Period('M') with columns:
+      commits, prs_opened, issues_opened, stars_gained
+    Returns empty DataFrame on failure.
+    Cache file: {slug}.stats.parquet (24h TTL).
+    """
+    spec = RepoSpec(owner, repo)
+    cache_dir = Path(cache_dir)
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / f"{spec.slug()}.stats.parquet"
+
+    if _cache_is_fresh(cache_path):
+        df = pd.read_parquet(cache_path)
+        if df.empty:
+            return df
+        df.index = pd.PeriodIndex(df.index, freq="M")
+        return df
+
+    since = datetime.now(timezone.utc) - timedelta(days=years_back * 365)
+    since_iso = since.isoformat()
+
+    session = requests.Session()
+    session.verify = _ssl_verify()
+    if token:
+        session.headers["Authorization"] = f"Bearer {token}"
+    session.headers["Accept"] = "application/vnd.github+json"
+
+    base = f"{GITHUB_API}/repos/{owner}/{repo}"
+
+    # 1. Commits
+    commit_rows = _paginate(
+        session,
+        f"{base}/commits",
+        {"per_page": 100, "since": since_iso},
+        max_pages,
+    )
+
+    # 2. PRs (all states, sorted newest first so we can stop early)
+    pr_rows = _paginate(
+        session,
+        f"{base}/pulls",
+        {"per_page": 100, "state": "all", "sort": "created", "direction": "desc"},
+        max_pages,
+    )
+
+    # 3. Issues (excludes PRs via is_pr check)
+    issue_rows = _paginate(
+        session,
+        f"{base}/issues",
+        {"per_page": 100, "state": "all", "sort": "created", "direction": "desc", "since": since_iso},
+        max_pages,
+    )
+
+    # 4. Stars (Accept header for timestamps)
+    session.headers["Accept"] = "application/vnd.github.star+json"
+    star_rows = _paginate(
+        session,
+        f"{base}/stargazers",
+        {"per_page": 100},
+        max_pages,
+    )
+    session.headers["Accept"] = "application/vnd.github+json"
+
+    # --- Aggregate to monthly ---
+    def _to_period(date_str: str) -> pd.Period | None:
+        try:
+            return pd.Timestamp(date_str).to_period("M")
+        except Exception:
+            return None
+
+    monthly: dict[pd.Period, dict] = {}
+
+    def _inc(period: pd.Period | None, key: str) -> None:
+        if period is None:
+            return
+        if period not in monthly:
+            monthly[period] = {"commits": 0, "prs_opened": 0, "issues_opened": 0, "stars_gained": 0}
+        monthly[period][key] += 1
+
+    for c in commit_rows:
+        try:
+            _inc(_to_period(c["commit"]["author"]["date"]), "commits")
+        except (KeyError, TypeError):
+            pass
+
+    for pr in pr_rows:
+        dt = pr.get("created_at", "")
+        if dt and pd.Timestamp(dt, tz="UTC") >= since:
+            _inc(_to_period(dt), "prs_opened")
+
+    for issue in issue_rows:
+        if "pull_request" in issue:  # skip PRs listed in issues endpoint
+            continue
+        dt = issue.get("created_at", "")
+        if dt and pd.Timestamp(dt, tz="UTC") >= since:
+            _inc(_to_period(dt), "issues_opened")
+
+    for star in star_rows:
+        dt = star.get("starred_at", "")
+        if dt and pd.Timestamp(dt, tz="UTC") >= since:
+            _inc(_to_period(dt), "stars_gained")
+
+    if not monthly:
+        empty = pd.DataFrame(
+            columns=["commits", "prs_opened", "issues_opened", "stars_gained"],
+            dtype="int64",
+        )
+        empty.to_parquet(cache_path)
+        return empty
+
+    df = pd.DataFrame.from_dict(monthly, orient="index").sort_index().fillna(0).astype("int64")
+    df.index = pd.PeriodIndex(df.index, freq="M")
+    df_to_save = df.copy()
+    df_to_save.index = df_to_save.index.astype(str)
+    df_to_save.to_parquet(cache_path)
+    return df
+
+
 def fetch_commits(
     owner: str,
     repo: str,
