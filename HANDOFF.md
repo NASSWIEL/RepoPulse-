@@ -7,9 +7,9 @@
 ## TL;DR
 
 - Refonte profonde de `RepoPulse-` en **app Gradio sur Hugging Face Spaces** qui forecast l'activité mensuelle (commits) d'un repo GitHub via un **Chronos-T5-small fine-tuné en LoRA**.
-- Code complet et testé sur branche `feat/monthly-forecast-redesign`.
-- **Étape en cours** : fetch des données d'entraînement (interrompu — à reprendre sur la GPU machine).
-- 28 commits, 27 tests passent, lint clean.
+- Code complet et testé sur `main`.
+- **Étape en cours** : fetch de 2454 repos (2000 train + 454 val) — peut encore tourner sur la machine Windows, ou à reprendre sur GPU machine.
+- 30+ commits, 27 tests passent, lint clean.
 
 ---
 
@@ -38,9 +38,9 @@ src/
 └── plotting.py       ── Plotly figure : history + 3 forecasts + IC band
 
 training/
-├── repos.yaml                ── 480 train + 120 val (small repos 200-600 stars)
-├── discover_small_repos.py   ── script de génération de repos.yaml via GitHub search
-├── build_dataset.py          ── fetch all repos -> parquet (avec checkpoints tous les 25)
+├── repos.yaml                ── 2000 train + 454 val (lambda repos 50-5000 stars, big-tech filtrés)
+├── discover_small_repos.py   ── génère repos.yaml via 12 search buckets GitHub (4 star × 3 date ranges)
+├── build_dataset.py          ── fetch_monthly_commits_fast (since=5ans, max_pages=30) -> parquet
 ├── train.py                  ── LoRA fine-tuning de Chronos-T5-small
 └── evaluate.py               ── benchmark Ours vs ZS vs naive sur val split
 
@@ -54,12 +54,20 @@ docs/superpowers/
 └── plans/2026-05-22-monthly-forecast-redesign.md
 ```
 
-### Fetch en cours d'interruption
+### Fetch en cours (ou interrompu)
 
-- **96 repos OK** déjà fetchés et cachés (sur 480 train cible)
-- Cache : `data/cache/<owner>__<repo>.parquet` (98 fichiers, ~10MB total)
-- Le cache N'EST PAS commité (gitignored). À recréer sur la nouvelle machine.
-- Le fetch était à ~8 repos/min, ETA ~60 min total — c'est facile à refaire.
+- **2454 repos** dans `training/repos.yaml` (2000 train + 454 val)
+- Filtrés : big-tech orgs exclus (Azure, Google, AWS, Intel...), bots exclus (>300 commits/mois)
+- Script optimisé : `fetch_monthly_commits_fast` avec `since=5ans, max_pages=30` → ~5-10s/repo
+- Cache : `data/cache/<owner>__<repo>.monthly.parquet` (TTL 24h)
+- Le cache N'EST PAS commité (gitignored). Le fetch repart de zéro sur une nouvelle machine.
+- **ETA fetch complet** : ~16h sur réseau corporate (2 repos/min), ~3-4h sur réseau rapide
+
+Pour reprendre le fetch :
+```bash
+python training/build_dataset.py --split train
+python training/build_dataset.py --split validation
+```
 
 ### Tests
 
@@ -80,7 +88,7 @@ Les 2 tests `slow` (Chronos zero-shot + Chronos fine-tuned) nécessitent downloa
 ```bash
 git clone https://github.com/NASSWIEL/RepoPulse-.git
 cd RepoPulse-
-git checkout feat/monthly-forecast-redesign
+git checkout main
 ```
 
 ### 2. Python env
