@@ -74,6 +74,86 @@ def _cache_is_fresh(path: Path) -> bool:
     return age < CACHE_TTL
 
 
+def fetch_monthly_commits_fast(
+    owner: str,
+    repo: str,
+    token: str | None = None,
+    cache_dir: Path = DEFAULT_CACHE_DIR,
+    years_back: int = 5,
+    max_pages: int = 30,
+) -> pd.Series:
+    """Fetch commits for the last `years_back` years, aggregate to monthly counts.
+
+    Uses `since` date filtering so most lambda repos need only 5-15 API pages
+    instead of 30-100+. Returns a pd.Series indexed by Period('M').
+    """
+    from src.aggregate import to_monthly
+
+    spec = RepoSpec(owner, repo)
+    cache_dir = Path(cache_dir)
+    cache_dir.mkdir(parents=True, exist_ok=True)
+    cache_path = cache_dir / f"{spec.slug()}.monthly.parquet"
+
+    if _cache_is_fresh(cache_path):
+        df = pd.read_parquet(cache_path)
+        if df.empty:
+            return pd.Series(dtype="int64")
+        return pd.Series(df["commits"].values, index=pd.PeriodIndex(df["month"], freq="M"), dtype="int64")
+
+    since = datetime.now(timezone.utc) - timedelta(days=years_back * 365)
+
+    session = requests.Session()
+    session.verify = _ssl_verify()
+    if token:
+        session.headers["Authorization"] = f"Bearer {token}"
+    session.headers["Accept"] = "application/vnd.github+json"
+
+    url = f"{GITHUB_API}/repos/{owner}/{repo}/commits"
+    params: dict = {"per_page": 100, "since": since.isoformat()}
+    rows: list[dict] = []
+    pages = 0
+
+    while url and pages < max_pages:
+        resp = session.get(url, params=params if pages == 0 else None, timeout=30)
+        if resp.status_code == 404:
+            raise RepoNotFoundError(f"{owner}/{repo} not found or private")
+        if resp.status_code == 403 and "rate limit" in resp.text.lower():
+            reset = int(resp.headers.get("X-RateLimit-Reset", "0"))
+            reset_at = datetime.fromtimestamp(reset, tz=timezone.utc)
+            wait = max(0, reset - int(time.time())) + 5
+            logger.warning("Rate limit hit on %s/%s. Sleeping %ds", owner, repo, wait)
+            time.sleep(wait)
+            continue
+        resp.raise_for_status()
+        for item in resp.json():
+            rows.append({"date": item["commit"]["author"]["date"], "sha": item["sha"]})
+        pages += 1
+        link = resp.headers.get("Link", "")
+        next_url = None
+        for part in link.split(","):
+            if 'rel="next"' in part:
+                next_url = part.split(";")[0].strip().strip("<>")
+        url = next_url
+
+    if not rows:
+        _save_monthly_cache(cache_path, pd.Series(dtype="int64"))
+        return pd.Series(dtype="int64")
+
+    df_commits = pd.DataFrame(rows)
+    df_commits["date"] = pd.to_datetime(df_commits["date"], utc=True)
+    s = to_monthly(df_commits)
+    _save_monthly_cache(cache_path, s)
+    return s
+
+
+def _save_monthly_cache(cache_path: Path, s: pd.Series) -> None:
+    if s.empty:
+        df = pd.DataFrame({"month": pd.Series(dtype="object"), "commits": pd.Series(dtype="int64")})
+    else:
+        df = pd.DataFrame({"month": s.index.astype(str), "commits": s.values})
+    df.to_parquet(cache_path, index=False)
+
+
 def fetch_commits(
     owner: str,
     repo: str,

@@ -12,13 +12,11 @@ import pandas as pd
 import yaml
 from dotenv import load_dotenv
 
-from src.aggregate import to_monthly
-from src.github_fetch import RepoNotFoundError, fetch_commits, parse_repo_url
+from src.github_fetch import RepoNotFoundError, fetch_monthly_commits_fast, parse_repo_url
 
 logger = logging.getLogger(__name__)
 
 # Repos averaging more than this per month are automated bots (package mirrors, CI bots…).
-# They produce unrealistic commit patterns — useless for forecasting real activity.
 MAX_AVG_COMMITS_PER_MONTH = 300
 
 
@@ -54,14 +52,12 @@ def main(
 
     for idx, entry in enumerate(repos, start=1):
         spec = parse_repo_url(entry)
-        print(f"[{idx}/{total}] fetching {entry}...", flush=True)
+        print(f"[{idx}/{total}] {entry}...", flush=True)
         try:
-            commits = fetch_commits(
+            s = fetch_monthly_commits_fast(
                 spec.owner,
                 spec.repo,
                 token=token,
-                wait_on_rate_limit=True,
-                max_pages=100,
             )
         except RepoNotFoundError:
             print(f"[{idx}/{total}] SKIP {entry}: not found", flush=True)
@@ -69,8 +65,6 @@ def main(
         except Exception as e:
             print(f"[{idx}/{total}] ERROR {entry}: {type(e).__name__}: {e}", flush=True)
             continue
-
-        s = to_monthly(commits)
 
         if len(s) < 24:
             print(f"[{idx}/{total}] SKIP {entry}: only {len(s)} months", flush=True)
@@ -80,19 +74,18 @@ def main(
         if avg_per_month > MAX_AVG_COMMITS_PER_MONTH:
             skipped_bot += 1
             print(
-                f"[{idx}/{total}] SKIP {entry}: bot-like ({avg_per_month:.0f} commits/month avg)",
+                f"[{idx}/{total}] SKIP {entry}: bot ({avg_per_month:.0f}/month avg)",
                 flush=True,
             )
             continue
 
         series_map[entry] = s
         print(
-            f"[{idx}/{total}] OK {entry}: {len(s)} months, {len(commits)} commits"
-            f" ({avg_per_month:.0f}/month avg)",
+            f"[{idx}/{total}] OK {entry}: {len(s)} months ({avg_per_month:.0f}/month avg)",
             flush=True,
         )
 
-        if idx % 25 == 0:
+        if idx % 50 == 0:
             partial = build_dataset_from_series(series_map)
             output.parent.mkdir(parents=True, exist_ok=True)
             partial.to_parquet(output, index=False)
