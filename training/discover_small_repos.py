@@ -1,7 +1,8 @@
 """Discover small public repos via the GitHub search API.
 
-Targets: stars 200–3000, created on/before 2022-05-01, recently active, public.
-Outputs a fresh `training/repos.yaml` with `train` (480) and `validation` (120).
+Targets: stars 50–5000, created on/before 2022-05-01, recently active, public.
+Uses star-range × date-range buckets to work around the 1000-result/query limit.
+Outputs a fresh `training/repos.yaml` with `train` (2000) and `validation` (500).
 """
 
 from __future__ import annotations
@@ -27,12 +28,36 @@ SESSION.headers["Authorization"] = f"Bearer {TOKEN}"
 SESSION.headers["Accept"] = "application/vnd.github+json"
 SESSION.verify = VERIFY
 
+TRAIN_SIZE = 2000
+VAL_SIZE = 500
+TARGET = TRAIN_SIZE + VAL_SIZE + 200  # 200-repo buffer for filtering
+
+# Build query buckets: 4 star ranges × 3 date ranges = 12 queries → up to 12 000 candidates
+STAR_RANGES = [
+    "stars:50..200",
+    "stars:200..600",
+    "stars:600..1500",
+    "stars:1500..5000",
+]
+DATE_RANGES = [
+    "created:<2018-01-01",
+    "created:2018-01-01..2020-06-30",
+    "created:2020-07-01..2022-05-01",
+]
+ACTIVITY_FILTER = "pushed:>2024-06-01 archived:false fork:false"
+
+QUERIES = [
+    f"{stars} {dates} {ACTIVITY_FILTER}"
+    for stars in STAR_RANGES
+    for dates in DATE_RANGES
+]
+
 
 def search_page(query: str, page: int, per_page: int = 100) -> list[dict]:
     while True:
         r = SESSION.get(
             "https://api.github.com/search/repositories",
-            params={"q": query, "per_page": per_page, "page": page, "sort": "stars", "order": "desc"},
+            params={"q": query, "per_page": per_page, "page": page, "sort": "updated", "order": "desc"},
             timeout=30,
         )
         if r.status_code == 403 and "rate limit" in r.text.lower():
@@ -41,65 +66,82 @@ def search_page(query: str, page: int, per_page: int = 100) -> list[dict]:
             print(f"  rate-limit, sleeping {wait}s...", flush=True)
             time.sleep(wait)
             continue
+        if r.status_code == 422:
+            # GitHub rejects this query (e.g. empty result set for a bucket)
+            return []
         r.raise_for_status()
         return r.json().get("items", [])
 
 
-def discover(target: int = 700) -> list[str]:
-    """Return a list of `owner/repo` strings sampled from small-repo searches."""
-    queries = [
-        "stars:200..600 created:<2022-05-01 pushed:>2025-01-01 archived:false",
-        "stars:600..1200 created:<2022-05-01 pushed:>2025-01-01 archived:false",
-        "stars:1200..2500 created:<2022-05-01 pushed:>2025-01-01 archived:false",
-        "stars:2500..5000 created:<2022-05-01 pushed:>2025-01-01 archived:false",
-    ]
+def discover(target: int = TARGET) -> list[str]:
+    """Return deduplicated `owner/repo` strings from cross-bucketed searches."""
     seen: set[str] = set()
     out: list[str] = []
-    for q in queries:
-        for page in range(1, 11):
+
+    for q_idx, q in enumerate(QUERIES, start=1):
+        print(f"\n[{q_idx}/{len(QUERIES)}] query: {q}", flush=True)
+        for page in range(1, 11):  # max 1000 results per query
             items = search_page(q, page)
             if not items:
                 break
+            added = 0
             for it in items:
                 full = it["full_name"]
                 if full in seen:
                     continue
                 if it.get("fork"):
                     continue
-                if it.get("size", 0) < 50:
+                if it.get("archived"):
+                    continue
+                if it.get("size", 0) < 30:
                     continue
                 seen.add(full)
                 out.append(full)
-            print(f"  q={q[:50]}... page={page} -> {len(out)} total", flush=True)
+                added += 1
+            print(f"  page {page:2d}: +{added:3d} new  total={len(out)}", flush=True)
+            time.sleep(2)  # search API: 30 req/min authenticated
             if len(out) >= target:
+                print(f"Reached target {target}, stopping early.", flush=True)
                 return out
-            time.sleep(1)  # be nice to the search API (30 req/min limit)
+        if len(out) >= target:
+            break
+
     return out
 
 
 def main() -> None:
-    print("Discovering small repos via GitHub search...", flush=True)
-    repos = discover(target=700)
-    print(f"Discovered {len(repos)} unique repos", flush=True)
+    print(f"Discovering {TARGET} small repos via GitHub search...", flush=True)
+    repos = discover(target=TARGET)
+    print(f"\nDiscovered {len(repos)} unique repos", flush=True)
 
-    if len(repos) < 600:
-        print(f"WARNING: only {len(repos)} repos found, need 600. Lower the target or widen queries.", flush=True)
+    need = TRAIN_SIZE + VAL_SIZE
+    if len(repos) < need:
+        print(
+            f"WARNING: only {len(repos)} repos found, need {need}. "
+            "Widen queries or lower targets.",
+            flush=True,
+        )
         sys.exit(1)
 
     random.seed(42)
     random.shuffle(repos)
-    train = sorted(repos[:480])
-    validation = sorted(repos[480:600])
+    train = sorted(repos[:TRAIN_SIZE])
+    validation = sorted(repos[TRAIN_SIZE : TRAIN_SIZE + VAL_SIZE])
 
     overlap = set(train) & set(validation)
     assert not overlap, f"overlap: {overlap}"
 
     out = {"train": train, "validation": validation}
     with open("training/repos.yaml", "w", encoding="utf-8") as f:
-        f.write("# Auto-discovered small public repos (stars 200-5000, created <=2022-05-01).\n")
-        f.write("# Generated by training/discover_small_repos.py\n\n")
+        f.write(
+            "# Auto-discovered small public repos (stars 50-5000, created <=2022-05-01).\n"
+            "# Generated by training/discover_small_repos.py\n\n"
+        )
         yaml.safe_dump(out, f, default_flow_style=False, sort_keys=False)
-    print(f"Wrote training/repos.yaml: {len(train)} train + {len(validation)} val", flush=True)
+    print(
+        f"Wrote training/repos.yaml: {len(train)} train + {len(validation)} val",
+        flush=True,
+    )
 
 
 if __name__ == "__main__":

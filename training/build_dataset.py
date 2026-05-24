@@ -17,6 +17,10 @@ from src.github_fetch import RepoNotFoundError, fetch_commits, parse_repo_url
 
 logger = logging.getLogger(__name__)
 
+# Repos averaging more than this per month are automated bots (package mirrors, CI bots…).
+# They produce unrealistic commit patterns — useless for forecasting real activity.
+MAX_AVG_COMMITS_PER_MONTH = 300
+
 
 def build_dataset_from_series(series_map: Mapping[str, pd.Series]) -> pd.DataFrame:
     rows = []
@@ -46,6 +50,7 @@ def main(
     repos = yaml.safe_load(repos_yaml.read_text())[split]
     series_map: dict[str, pd.Series] = {}
     total = len(repos)
+    skipped_bot = 0
 
     for idx, entry in enumerate(repos, start=1):
         spec = parse_repo_url(entry)
@@ -56,7 +61,7 @@ def main(
                 spec.repo,
                 token=token,
                 wait_on_rate_limit=True,
-                max_pages=250,
+                max_pages=100,
             )
         except RepoNotFoundError:
             print(f"[{idx}/{total}] SKIP {entry}: not found", flush=True)
@@ -64,19 +69,36 @@ def main(
         except Exception as e:
             print(f"[{idx}/{total}] ERROR {entry}: {type(e).__name__}: {e}", flush=True)
             continue
+
         s = to_monthly(commits)
+
         if len(s) < 24:
             print(f"[{idx}/{total}] SKIP {entry}: only {len(s)} months", flush=True)
             continue
+
+        avg_per_month = s.mean()
+        if avg_per_month > MAX_AVG_COMMITS_PER_MONTH:
+            skipped_bot += 1
+            print(
+                f"[{idx}/{total}] SKIP {entry}: bot-like ({avg_per_month:.0f} commits/month avg)",
+                flush=True,
+            )
+            continue
+
         series_map[entry] = s
-        print(f"[{idx}/{total}] OK {entry}: {len(s)} months, {len(commits)} commits", flush=True)
+        print(
+            f"[{idx}/{total}] OK {entry}: {len(s)} months, {len(commits)} commits"
+            f" ({avg_per_month:.0f}/month avg)",
+            flush=True,
+        )
 
         if idx % 25 == 0:
             partial = build_dataset_from_series(series_map)
             output.parent.mkdir(parents=True, exist_ok=True)
             partial.to_parquet(output, index=False)
             print(
-                f"  [checkpoint] {len(partial)} rows, {len(series_map)} repos -> {output}",
+                f"  [checkpoint] {len(partial)} rows, {len(series_map)} repos kept"
+                f" ({skipped_bot} bots skipped) -> {output}",
                 flush=True,
             )
 
@@ -84,7 +106,8 @@ def main(
     output.parent.mkdir(parents=True, exist_ok=True)
     df.to_parquet(output, index=False)
     print(
-        f"DONE: {len(df)} rows, {len(series_map)}/{total} repos kept -> {output}",
+        f"DONE: {len(df)} rows, {len(series_map)}/{total} repos kept"
+        f" ({skipped_bot} bot repos skipped) -> {output}",
         flush=True,
     )
 
